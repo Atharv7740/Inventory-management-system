@@ -114,11 +114,11 @@ if (swaggerDocument) {
 }
 
 // Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api/dashboard", require("./routes/dashboardRoutes"));
-app.use("/api/trips", require("./routes/tripRoutes"));
-app.use("/api/trucks", require("./routes/truckRoutes"));
+app.use("/api/auth", require("./Routes/authRoutes"));
+app.use("/api/users", require("./Routes/userRoutes"));
+app.use("/api/dashboard", require("./Routes/dashboardRoutes"));
+app.use("/api/trips", require("./Routes/tripRoutes"));
+app.use("/api/trucks", require("./Routes/truckRoutes"));
 
 // Root endpoint
 app.get("/", (req, res) => {
