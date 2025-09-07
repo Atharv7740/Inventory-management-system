@@ -598,4 +598,4 @@ A comprehensive API documentation for the TransportPro Inventory & Transport Man
 
 ---
 
-For more details, see the [Swagger UI](http://localhost:5000/api-docs) or the OpenAPI spec (`swagger-output.json`).
+For more details, see the [Swagger UI](https://inventory-management-system-mzk7.onrender.com/api-docs) or the OpenAPI spec (`swagger-output.json`).
