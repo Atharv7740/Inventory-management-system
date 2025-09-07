@@ -1,265 +1,601 @@
+# TransportPro API Documentation
 
-# Inventory Management System API Documentation
-
-> This is the backend for a full-stack Inventory Management System built with **Node.js**, **Express**, and **MongoDB**.
-> It supports user authentication (with email verification), truck inventory management, trip profit tracking, and an admin dashboard overview.
+A comprehensive API documentation for the TransportPro Inventory & Transport Management System backend. This document details all endpoints, request/response bodies, authentication, and requirements.
 
 ---
 
-## Base URL
+## Demo Credentials
 
+- **Admin**
+  - Email: `admin@transportpro.com`
+  - Password: `admin123`
+- **Staff**
+  - Email: `staff@transportpro.com`
+  - Password: `staff123`
+
+---
+
+## Authentication
+
+- All endpoints (except `/auth/login` and password reset) require a JWT Bearer token in the `Authorization` header.
+- Example: `Authorization: Bearer <token>`
+
+---
+
+## Endpoints
+
+### Auth
+
+#### POST `/api/auth/login`
+
+- **Description:** User login
+- **Request Body:**
+
+```json
+{
+  "email": "string",
+  "password": "string"
+}
 ```
-http://localhost:3000/api
+
+- **Response:** 200 OK, returns user object and JWT token
+
+#### POST `/api/auth/forgot-password`
+
+- **Description:** Request password reset
+- **Request Body:**
+
+```json
+{
+  "email": "string"
+}
+```
+
+#### POST `/api/auth/reset-password/{token}`
+
+- **Description:** Reset password
+- **Request Body:**
+
+```json
+{
+  "password": "string"
+}
+```
+
+#### GET `/api/auth/profile`
+
+- **Description:** Get user profile (requires auth)
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** User object
+
+#### PUT `/api/auth/profile`
+
+- **Description:** Update user profile (requires auth)
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
+```json
+{
+  "fullName": "string",
+  "phone": "string",
+  "department": "string"
+}
+```
+
+#### PUT `/api/auth/change-password`
+
+- **Description:** Change password (requires auth)
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
+```json
+{
+  "oldPassword": "string",
+  "newPassword": "string"
+}
 ```
 
 ---
 
-## Authentication Endpoints
+### Users (Admin Only)
 
-### Signup
+#### GET `/api/users/`
 
-- **POST** `/auth/signup`
+- **Description:** List all users
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Params:** `page`, `limit`, `search`, `role`, `status`
+- **Response:** Array of User objects
+
+#### POST `/api/users/`
+
+- **Description:** Create a new user
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
 ```json
 {
-  "name": "user",
-  "email": "user@example.com",
-  "password": "securePassword123"
-}
-```
-- Includes **email verification via token**
-- **Response:**
-```json
-{
-  "message": "Signup successful! Please check your email to verify your account."
-}
-```
-
-### Email Verification
-
-- **GET** `/auth/verify/:token`
--  Activates account for login
-
-### Signin
-
-- **POST** `/auth/signin`
-```json
-{
-  "email": "user@example.com",
-  "password": "securePassword123"
+  "username": "string",
+  "email": "string",
+  "fullName": "string",
+  "phone": "string",
+  "department": "string",
+  "password": "string",
+  "role": "admin|staff",
+  "status": "active|inactive",
+  "permissions": { ... }
 }
 ```
 
-- **Response:**
+#### GET `/api/users/{id}`
+
+- **Description:** Get user by ID
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** User object
+
+#### PUT `/api/users/{id}`
+
+- **Description:** Update user
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:** (same as create)
+
+#### DELETE `/api/users/{id}`
+
+- **Description:** Delete user
+- **Headers:** `Authorization: Bearer <token>`
+
+#### PUT `/api/users/{id}/reset-password`
+
+- **Description:** Reset user password
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
 ```json
 {
-  "token": "jwt_token_here",
-  "user": {
-    "id": "user_id",
-    "name": "user",
-    "email": "user@example.com"
-  }
+  "newPassword": "string"
 }
 ```
 
--  Token includes `userId` and `email`
+#### PUT `/api/users/{id}/toggle-status`
 
-### Forgot Password
-
-- **POST** `/auth/forgot`
-```json
-{ "email": "user@example.com" }
-```
-
-### Reset Password
-
-- **POST** `/auth/reset/:token`
-```json
-{ "password": "newSecurePassword456" }
-```
+- **Description:** Toggle user status
+- **Headers:** `Authorization: Bearer <token>`
 
 ---
 
-##  Trip Management Endpoints ( JWT Required)
+### Dashboard
 
-### Create Trip
+#### GET `/api/dashboard/overview`
 
-- **POST** `/trips`
+- **Description:** Get dashboard KPIs
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/dashboard/recent-trips`
+
+- **Description:** Get recent trips
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/dashboard/fleet-status`
+
+- **Description:** Get fleet status
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/dashboard/trips`
+
+- **Description:** List trips
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Params:** `page`, `limit`, `status`, `vehicleId`
+
+#### POST `/api/dashboard/trips`
+
+- **Description:** Create trip
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:** See Trip schema
+
+#### GET `/api/dashboard/trucks`
+
+- **Description:** List trucks
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Params:** `page`, `limit`, `status`, `model`
+
+#### POST `/api/dashboard/trucks`
+
+- **Description:** Create truck
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:** See Truck schema
+
+---
+
+### Trips
+
+#### GET `/api/trips/`
+
+- **Description:** List all trips
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Params:** `page`, `limit`, `status`, `vehicleId`, `search`, `startDate`, `endDate`, `sortBy`, `sortOrder`
+
+#### POST `/api/trips/`
+
+- **Description:** Create a new trip
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
 ```json
 {
-  "source": "Mumbai",
-  "destination": "Pune",
-  "goods": "Cement",
+  "source": "string",
+  "destination": "string",
+  "goods": "string",
+  "vehicleId": "string",
+  "distance": 0,
+  "startDate": "date-time",
+  "returnDate": "date-time",
   "expenses": {
-    "diesel": 2000,
-    "driver": 500,
-    "tolls": 300,
-    "tyre": 150,
-    "misc": 50
+    "diesel": 0,
+    "driver": 0,
+    "tolls": 0,
+    "tyre": 0,
+    "misc": 0
   },
-  "customerPayment": 5000
+  "customerPayment": 0,
+  "status": "completed|in-transit|pending|cancelled"
 }
 ```
 
--  Automatically calculates and saves `netProfit` using model method + pre-save hook
+#### GET `/api/trips/{id}`
 
-###  Get All Trips
+- **Description:** Get trip by ID
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** Trip object
 
-- **GET** `/trips`
+#### PUT `/api/trips/{id}`
 
-### 🔍 Get Trip by ID
+- **Description:** Update trip
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:** (same as create)
 
-- **GET** `/trips/:id`
+#### DELETE `/api/trips/{id}`
 
-###  Update Trip
+- **Description:** Delete trip
+- **Headers:** `Authorization: Bearer <token>`
 
-- **PUT** `/trips/:id`
+#### GET `/api/trips/stats`
+
+- **Description:** Get trip statistics
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/trips/recent`
+
+- **Description:** Get recent trips
+- **Headers:** `Authorization: Bearer <token>`
+
+#### POST `/api/trips/calculate-profit`
+
+- **Description:** Calculate trip profit
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
 ```json
 {
-  "customerPayment": 6000,
-  "expenses": {
-    "diesel": 2500,
-    "driver": 800
-  }
+  "expenses": 0,
+  "customerPayment": 0
 }
 ```
-
--  Automatically recalculates `netProfit` after update
-
-###  Delete Trip
-
-- **DELETE** `/trips/:id`
 
 ---
 
-## Truck Management Endpoints ( JWT Required)
+### Trucks
 
-### Create Truck
+#### GET `/api/trucks/`
 
-- **POST** `/trucks`
+- **Description:** List all trucks
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Params:** `page`, `limit`, `status`, `model`, `search`, `startDate`, `endDate`, `sortBy`, `sortOrder`
+
+#### POST `/api/trucks/`
+
+- **Description:** Create a new truck
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
 ```json
 {
-  "model": "Tata 407",
-  "registrationNumber": "MH12AB1234",
+  "registrationNumber": "string",
+  "model": "string",
+  "modelYear": 0,
   "seller": {
-    "name": "Ramesh Traders",
-    "contact": "9876543210",
-    "address": "Pune"
+    "name": "string",
+    "contact": "string",
+    "address": "string",
+    "aadhaarNumber": "string",
+    "email": "string"
   },
-  "purchaseDate": "2024-06-01",
-  "purchasePrice": 500000,
+  "purchaseDate": "date-time",
+  "purchasePrice": 0,
   "purchasePayments": [
-    { "method": "cash", "amount": 200000, "date": "2024-06-01" },
-    { "method": "GPay", "amount": 300000, "date": "2024-06-02" }
+    {
+      "method": "cash|RTGS|cheque|UPI|other",
+      "amount": 0,
+      "date": "date-time"
+    }
   ],
   "documents": {
     "NOC": true,
     "insurance": true,
-    "fitness": false,
+    "fitness": true,
     "tax": true
   },
   "expenses": {
-    "diesel": 10000,
-    "bodyWork": 3000,
-    "tyres": 4000,
-    "painting": 2000,
-    "misc": 1000
+    "transportation": 0,
+    "tollCharges": 0,
+    "tyreCharges": 0,
+    "fattaExpenses": 0,
+    "driverCharges": 0,
+    "bodyWork": 0,
+    "paintExpenses": 0,
+    "builtlyExpenses": 0,
+    "diesel": 0,
+    "kamaniWork": 0,
+    "floorExpenses": 0,
+    "insuranceExpenses": 0,
+    "tyres": 0,
+    "painting": 0,
+    "misc": 0
   },
   "sale": {
     "buyer": {
-      "name": "Buyer X",
-      "contact": "1234567890",
-      "address": "Nashik"
+      "name": "string",
+      "contact": "string",
+      "address": "string",
+      "aadhaarNumber": "string",
+      "email": "string"
     },
-    "date": "2024-06-20",
-    "price": 600000,
-    "commission": 10000,
+    "date": "date-time",
+    "price": 0,
+    "commission": 0,
+    "commissionDealerName": "string",
     "payments": [
-      { "method": "UPI", "amount": 600000, "date": "2024-06-20" }
+      {
+        "method": "cash|RTGS|cheque|UPI|other",
+        "amount": 0,
+        "date": "date-time"
+      }
     ]
-  }
-}
-```
-
-- `resaleProfit` is calculated using model method and saved automatically
-
-### Get All Trucks
-
-- **GET** `/trucks`
-
-### Get Truck by ID
-
-- **GET** `/trucks/:id`
-
-### Update Truck
-
-- **PUT** `/trucks/:id`
-
-- Recalculates resale profit on update
-
-### Delete Truck
-
-- **DELETE** `/trucks/:id`
-
----
-
-## Admin Dashboard Analytics (JWT Required)
-
-### Get Overview
-
-- **GET** `/admin/dashboard/overview`
-
-- **Response:**
-```json
-{
-  "trips": {
-    "total": 2,
-    "totalProfit": 7000
   },
-  "trucks": {
-    "total": 1,
-    "totalPurchased": 1,
-    "totalSold": 1,
-    "totalResaleProfit": 90000,
-    "averageResaleProfit": 90000,
-    "totalPurchaseCost": 500000,
-    "totalSaleRevenue": 600000
+  "resaleProfit": 0,
+  "status": "available|in-transit|maintenance|sold"
+}
+```
+
+#### GET `/api/trucks/{id}`
+
+- **Description:** Get truck by ID
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** Truck object
+
+#### PUT `/api/trucks/{id}`
+
+- **Description:** Update truck
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:** (same as create)
+
+#### DELETE `/api/trucks/{id}`
+
+- **Description:** Delete truck
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/trucks/stats`
+
+- **Description:** Get truck statistics
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/trucks/fleet-status`
+
+- **Description:** Get fleet status
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/trucks/available`
+
+- **Description:** Get available trucks
+- **Headers:** `Authorization: Bearer <token>`
+
+#### PUT `/api/trucks/{id}/status`
+
+- **Description:** Update truck status
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
+```json
+{
+  "status": "available|in-transit|maintenance|sold"
+}
+```
+
+#### POST `/api/trucks/calculate-profit`
+
+- **Description:** Calculate truck profit
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+
+```json
+{
+  "purchasePrice": 0,
+  "expenses": 0,
+  "salePrice": 0,
+  "commission": 0
+}
+```
+
+---
+
+### Reports
+
+#### GET `/api/reports/overview`
+
+- **Description:** Get KPIs for reports page
+- **Headers:** `Authorization: Bearer <token>`
+
+#### GET `/api/reports/transport`
+
+- **Description:** Get transport analytics
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** Array of Trip objects
+
+#### GET `/api/reports/inventory`
+
+- **Description:** Get inventory analytics
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** Array of Truck objects
+
+---
+
+## Schemas
+
+### User
+
+```json
+{
+  "username": "string",
+  "email": "string",
+  "fullName": "string",
+  "phone": "string",
+  "department": "string",
+  "password": "string",
+  "role": "admin|staff",
+  "status": "active|inactive",
+  "permissions": {
+    "transportation": {
+      "viewTrips": true,
+      "editTrips": true,
+      "createTrips": true,
+      "deleteTrips": true
+    },
+    "inventory": {
+      "viewInventory": true,
+      "editTrucks": true,
+      "addTrucks": true,
+      "deleteTrucks": true
+    },
+    "reports": {
+      "viewReports": true,
+      "exportReports": true
+    },
+    "userManagement": {
+      "viewUsers": true,
+      "editUsers": true,
+      "createUsers": true,
+      "deleteUsers": true
+    }
   }
 }
 ```
 
-- Fixed issue with malformed `totalPurchaseCost` by removing accidental string interpolation and nested object leakage
+### Trip
 
----
-
-## Postman Setup Guide
-
-1. Set environment variables:
-   - `baseUrl = http://localhost:3000/api`
-   - `token = <JWT from /signin>`
-
-2. Add Authorization header:
-   ```
-   Key: Authorization
-   Value: Bearer {token}
-   ```
-
----
-
-## Admin Access
-
-Admin account is seeded automatically:
 ```json
 {
-  "email": "admin@ims.com",
-  "password": "Admin@1234"
+  "tripId": "string",
+  "source": "string",
+  "destination": "string",
+  "goods": "string",
+  "vehicleId": "string",
+  "distance": 0,
+  "startDate": "date-time",
+  "returnDate": "date-time",
+  "expenses": {
+    "diesel": 0,
+    "driver": 0,
+    "tolls": 0,
+    "tyre": 0,
+    "misc": 0
+  },
+  "customerPayment": 0,
+  "netProfit": 0,
+  "status": "completed|in-transit|pending|cancelled"
 }
 ```
 
-- Admin can access and manage:
-  - All trip and truck endpoints
-  - Dashboard overview
-  - User management features (future-ready)
+### Truck
+
+```json
+{
+  "truckId": "string",
+  "registrationNumber": "string",
+  "model": "string",
+  "modelYear": 0,
+  "seller": {
+    "name": "string",
+    "contact": "string",
+    "address": "string",
+    "aadhaarNumber": "string",
+    "email": "string"
+  },
+  "purchaseDate": "date-time",
+  "purchasePrice": 0,
+  "purchasePayments": [
+    {
+      "method": "cash|RTGS|cheque|UPI|other",
+      "amount": 0,
+      "date": "date-time"
+    }
+  ],
+  "documents": {
+    "NOC": true,
+    "insurance": true,
+    "fitness": true,
+    "tax": true
+  },
+  "expenses": {
+    "transportation": 0,
+    "tollCharges": 0,
+    "tyreCharges": 0,
+    "fattaExpenses": 0,
+    "driverCharges": 0,
+    "bodyWork": 0,
+    "paintExpenses": 0,
+    "builtlyExpenses": 0,
+    "diesel": 0,
+    "kamaniWork": 0,
+    "floorExpenses": 0,
+    "insuranceExpenses": 0,
+    "tyres": 0,
+    "painting": 0,
+    "misc": 0
+  },
+  "sale": {
+    "buyer": {
+      "name": "string",
+      "contact": "string",
+      "address": "string",
+      "aadhaarNumber": "string",
+      "email": "string"
+    },
+    "date": "date-time",
+    "price": 0,
+    "commission": 0,
+    "commissionDealerName": "string",
+    "payments": [
+      {
+        "method": "cash|RTGS|cheque|UPI|other",
+        "amount": 0,
+        "date": "date-time"
+      }
+    ]
+  },
+  "resaleProfit": 0,
+  "status": "available|in-transit|maintenance|sold"
+}
+```
 
 ---
 
+## Error Codes
 
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 423: Locked
+- 500: Internal Server Error
+
+---
+
+For more details, see the [Swagger UI](http://localhost:5000/api-docs) or the OpenAPI spec (`swagger-output.json`).
