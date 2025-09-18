@@ -1,0 +1,476 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * TransportPro - Modern Transport Management System Theme
+   * Colors are expressed as HSL values for tailwind.config.ts compatibility.
+  */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 20% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 20% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 20% 8%;
+
+    /* Transport Blue - Professional and trustworthy */
+    --primary: 213 87% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Light Gray */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 20% 8%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Orange Accent - Energy and action */
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success Green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning Yellow */
+    --warning: 45 100% 51%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 213 87% 55%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 224 25% 8%;
+    --sidebar-foreground: 210 40% 95%;
+    --sidebar-primary: 213 90% 60%;
+    --sidebar-primary-foreground: 224 20% 8%;
+    --sidebar-accent: 224 25% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 224 30% 18%;
+    --sidebar-ring: 213 87% 55%;
+  }
+
+  .dark {
+    --background: 224 20% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 224 25% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 25% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 213 87% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 224 25% 15%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 224 25% 15%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 100% 51%;
+    --warning-foreground: 224 20% 8%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 25% 15%;
+    --input: 224 25% 15%;
+    --ring: 213 87% 55%;
+
+    --sidebar-background: 224 30% 12%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 213 90% 65%;
+    --sidebar-primary-foreground: 224 25% 8%;
+    --sidebar-accent: 224 25% 18%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 224 25% 22%;
+    --sidebar-ring: 213 87% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  .transport-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--accent)) 100%
+    );
+  }
+
+  .metric-card {
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-3 text-sidebar-foreground font-medium text-sm transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1 hover:shadow-sm;
+  }
+
+  .nav-link.active {
+    background: linear-gradient(
+      to right,
+      hsl(var(--sidebar-primary)),
+      hsl(var(--sidebar-primary) / 0.9)
+    );
+    @apply text-sidebar-primary-foreground shadow-lg font-semibold border-l-4 border-sidebar-primary-foreground/30 relative;
+  }
+
+  .nav-link.active::after {
+    content: "";
+    @apply absolute right-2 top-1/2 -translate-y-1/2 w-1 h-1 bg-sidebar-primary-foreground rounded-full animate-pulse;
+  }
+
+  .sidebar-header {
+    background: linear-gradient(
+      to right,
+      hsl(var(--sidebar-background)),
+      hsl(var(--sidebar-accent))
+    );
+    @apply border-b border-sidebar-border/50 backdrop-blur-sm;
+  }
+
+  .sidebar-brand {
+    @apply text-sidebar-foreground font-bold text-lg tracking-wide drop-shadow-sm;
+  }
+
+  .user-avatar {
+    background: linear-gradient(
+      to bottom right,
+      hsl(var(--sidebar-primary)),
+      hsl(var(--sidebar-primary) / 0.8)
+    );
+    @apply text-sidebar-primary-foreground font-bold shadow-md ring-2 ring-sidebar-primary/20;
+  }
+
+  .nav-section {
+    @apply relative;
+  }
+
+  .nav-section::before {
+    content: "";
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      hsl(var(--sidebar-primary) / 0.3),
+      transparent
+    );
+    @apply absolute left-0 top-0 w-1 h-full rounded-r-full opacity-0 transition-opacity duration-300;
+  }
+
+  .nav-section:hover::before {
+    @apply opacity-100;
+  }
+
+  .sidebar-backdrop {
+    background: hsl(var(--sidebar-background) / 0.95);
+    @apply backdrop-blur-md border-r border-sidebar-border/30;
+  }
+
+  /* Login Page Theme */
+  .login-background {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--sidebar-background)) 0%,
+      hsl(var(--sidebar-accent)) 25%,
+      hsl(var(--background)) 50%,
+      hsl(var(--primary) / 0.05) 75%,
+      hsl(var(--accent) / 0.05) 100%
+    );
+  }
+
+  .login-backdrop {
+    @apply backdrop-blur-3xl;
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--primary) / 0.03) 0%,
+      transparent 50%
+    );
+  }
+
+  .login-logo {
+    @apply transition-transform duration-300 hover:scale-110;
+  }
+
+  .login-card {
+    @apply border border-border/20 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10;
+    backdrop-filter: blur(20px);
+  }
+
+  .login-submit-btn {
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--primary) / 0.9)
+    );
+    @apply hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-semibold;
+  }
+
+  .demo-credential-card {
+    @apply bg-gradient-to-br from-muted/60 to-muted/40 p-4 rounded-xl border border-border/30 hover:border-border/60 transition-all duration-300 hover:shadow-md hover:scale-105 backdrop-blur-sm;
+  }
+
+  /* Admin Pages Theme */
+  .admin-action-btn {
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
+    @apply text-white hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-semibold border-0;
+  }
+
+  .admin-metric-card {
+    @apply hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1 border border-border/30 backdrop-blur-sm;
+    background: linear-gradient(
+      to bottom right,
+      hsl(var(--card)),
+      hsl(var(--card) / 0.95)
+    );
+  }
+
+  .admin-feature-card {
+    @apply border border-border/30 hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 backdrop-blur-sm;
+    background: linear-gradient(
+      to bottom right,
+      hsl(var(--card)),
+      hsl(var(--card) / 0.98)
+    );
+  }
+
+  .admin-feature-item {
+    @apply flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/20 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-sm text-sm font-medium;
+  }
+
+  /* Dashboard Theme */
+  .dashboard-action-btn {
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--primary) / 0.9)
+    );
+    @apply text-white hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-semibold border-0 hover:scale-105;
+  }
+
+  .dashboard-secondary-btn {
+    @apply border-2 border-primary/20 bg-background hover:bg-primary/5 text-primary hover:text-primary/90 font-semibold hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:scale-105;
+  }
+
+  /* Global Theme Enhancements */
+  .page-container {
+    @apply transition-all duration-500 ease-out;
+  }
+
+  .page-header {
+    @apply relative mb-8;
+  }
+
+  .page-header::after {
+    content: "";
+    @apply absolute bottom-0 left-0 w-20 h-1 bg-gradient-to-r from-primary to-accent rounded-full;
+  }
+
+  .enhanced-card {
+    @apply bg-gradient-to-br from-card to-card/95 border border-border/30 hover:border-border/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 backdrop-blur-sm;
+  }
+
+  .icon-wrapper {
+    @apply transition-all duration-300 hover:scale-110 hover:rotate-3;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-bold;
+  }
+
+  .floating-element {
+    @apply animate-pulse;
+    animation-duration: 3s;
+  }
+
+  /* Enhanced Input Focus States */
+  .ui-input:focus {
+    @apply ring-2 ring-primary/20 border-primary/50 shadow-lg shadow-primary/10;
+  }
+
+  /* Enhanced Button Hover Effects */
+  .btn-enhanced {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .btn-enhanced::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-700;
+  }
+
+  .btn-enhanced:hover::before {
+    @apply translate-x-full;
+  }
+
+  /* Smooth Page Transitions */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Enhanced Scrollbar for Theme Consistency */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.3);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--primary) / 0.6),
+      hsl(var(--accent) / 0.6)
+    );
+    border-radius: 10px;
+    border: 2px solid hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
+  }
+
+  /* Landing Page Specific Styles */
+  .hero-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .feature-card-hover {
+    @apply transition-all duration-500 ease-out;
+  }
+
+  .feature-card-hover:hover {
+    @apply transform -translate-y-2 shadow-2xl;
+  }
+
+  .feature-card-hover:hover .feature-icon {
+    @apply scale-110 rotate-3;
+  }
+
+  .parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent;
+  }
+
+  .text-gradient-secondary {
+    @apply bg-gradient-to-r from-accent via-success to-warning bg-clip-text text-transparent;
+  }
+
+  .cta-button {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .cta-button::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full transition-transform duration-700;
+  }
+
+  .cta-button:hover::before {
+    @apply translate-x-full;
+  }
+
+  .landing-nav {
+    @apply transition-all duration-300;
+    backdrop-filter: blur(20px);
+  }
+
+  .landing-nav.scrolled {
+    @apply bg-background/95 border-b border-border/50 shadow-lg;
+  }
+
+  .stat-card {
+    @apply transition-all duration-300 hover:scale-105;
+  }
+
+  .social-icon {
+    @apply transition-all duration-300 hover:scale-110 hover:-translate-y-1;
+  }
+}
