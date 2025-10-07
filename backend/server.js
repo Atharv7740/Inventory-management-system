@@ -19,13 +19,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS Configuration for production deployment
+// Allowlist includes:
+// - FRONTEND_URL env var (if set on Render)
+// - the Vercel frontend deployed URL
+// - local dev origins for development
+const productionOrigins = [];
+if (process.env.FRONTEND_URL) {
+  // normalize (remove trailing slash)
+  productionOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ""));
+}
+// Add the Vercel frontend URL used in your project (TransportPro)
+productionOrigins.push("https://transportpro.vercel.app");
+
 const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
-      ? [
-          process.env.FRONTEND_URL ||
-            "https://inventory-management-frontend-fg7s.vercel.app/",
-        ]
+      ? productionOrigins
       : [
           "http://localhost:3000",
           "http://localhost:3001",
