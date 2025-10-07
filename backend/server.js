@@ -19,43 +19,57 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS Configuration for production deployment
-// Allowlist includes:
-// - FRONTEND_URL env var (if set on Render)
-// - the Vercel frontend deployed URL
-// - local dev origins for development
+// Build explicit allow list and use a dynamic origin callback to be robust
+const allowedLocalOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://localhost:5000',
+  'http://localhost:5173',
+];
+
 const productionOrigins = [];
 if (process.env.FRONTEND_URL) {
-  // normalize (remove trailing slash)
-  productionOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ""));
+  productionOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
 }
-// Add the Vercel frontend URL used in your project (TransportPro)
-productionOrigins.push("https://transportpro.vercel.app");
+// Ensure the deployed Vercel origin is allowed (no trailing slash)
+productionOrigins.push('https://transportpro.vercel.app');
 
+const allowedOrigins = process.env.NODE_ENV === 'production' ? productionOrigins : allowedLocalOrigins;
+
+// Dynamic origin check for CORS so we can log and control allowed hosts
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? productionOrigins
-      : [
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "http://127.0.0.1:3000",
-          "http://127.0.0.1:3001",
-          "http://localhost:5000",
-          "http://localhost:5173",
-        ],
+  origin: function (origin, callback) {
+    // If no origin (server-to-server or same-origin), allow it
+    if (!origin) return callback(null, true);
+
+    // Normalize incoming origin
+    const normalized = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(normalized)) {
+      return callback(null, true);
+    }
+
+    console.warn(`CORS blocked - origin not allowed: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
-    "Origin",
-    "X-Requested-With",
-    "Content-Type",
-    "Accept",
-    "Authorization",
-    "Cache-Control",
-    "Pragma",
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma',
   ],
   optionsSuccessStatus: 200, // For legacy browser support
 };
+
+// Log allowed origins at startup for debugging
+console.log('CORS configuration: NODE_ENV=', process.env.NODE_ENV);
+console.log('Allowed origins:', allowedOrigins);
 
 // Middleware
 app.use(cors(corsOptions));
