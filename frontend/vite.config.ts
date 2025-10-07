@@ -42,20 +42,6 @@ export default defineConfig({
   base: "/", // ✅ for Vercel use "/"
   build: {
     outDir: "dist/spa", // ✅ must be dist
-    // Improve chunking for large vendor bundles
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
-            if (id.includes('recharts') || id.includes('three') || id.includes('gsap')) return 'vendor-visuals';
-            return 'vendor';
-          }
-        },
-      },
-    },
-    // Raise the warning limit so moderate bundles don't spam logs (value in KB)
-    chunkSizeWarningLimit: 1000,
   },
   server: {
     host: "::",
