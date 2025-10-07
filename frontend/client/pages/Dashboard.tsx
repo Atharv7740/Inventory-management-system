@@ -1,4 +1,4 @@
-import React from "react";
+import React , { useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,7 +17,18 @@ import {
   Calendar,
   Sparkles,
   Activity,
+  MapPin,
 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "../components/ui/dialog";
+
 import { Link } from "react-router-dom";
 import { useReports } from "../contexts/ReportsContext";
 import { useTransport } from "../contexts/TransportContext";
@@ -46,6 +57,7 @@ export default function Dashboard() {
     trucksSold: trucks.filter(truck => truck.status === 'sold').length || 0,
   };
   
+  const [open, setOpen] = useState(true);
   // Calculate actual percentage change from last month
   const calculateMonthlyGrowth = () => {
     const currentMonth = new Date().getMonth();
@@ -56,6 +68,9 @@ export default function Dashboard() {
       return tripDate.getMonth() === currentMonth;
     });
     
+
+
+
     const lastMonthTrips = trips.filter(trip => {
       const tripDate = new Date(trip.startDate);
       return tripDate.getMonth() === lastMonth;
@@ -79,6 +94,9 @@ export default function Dashboard() {
     date: trip.startDate,
     status: trip.status,
   }));
+
+
+  const activeTrips = trips.filter((trip) => trip.status === "in-transit");
   
   // Get truck inventory (limit to 3 for dashboard)
   const truckInventory = trucks.slice(0, 3).map(truck => ({
@@ -89,7 +107,7 @@ export default function Dashboard() {
     lastTrip: truck.updatedAt || truck.createdAt,
   }));
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 ">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="relative">
@@ -122,6 +140,50 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+ {/* Active Trips Dialog */}
+
+
+ <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Active Trips (In Transit)</DialogTitle>
+            <DialogDescription>
+              Monitor your currently active trips in real time.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {activeTrips.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No active trips right now.
+              </p>
+            ) : (
+              activeTrips.map((trip) => (
+                <div
+                  key={trip.tripId || trip._id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                >
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {trip.source} → {trip.destination}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs px-2 py-1 rounded-full bg-warning/10 text-warning">
+                      {trip.status}
+                    </span>
+                    <span className="text-success font-semibold">
+                      ₹{trip.netProfit?.toLocaleString() || 0}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

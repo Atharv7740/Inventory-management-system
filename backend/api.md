@@ -7,7 +7,7 @@ A comprehensive API documentation for the TransportPro Inventory & Transport Man
 ## Demo Credentials
 
 - **Admin**
-  - Email: `admin@transportpro.com`
+  - Email: `admin@transportpro.com` 
   - Password: `admin123`
 - **Staff**
   - Email: `staff@transportpro.com`

@@ -8,6 +8,8 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<{ message: string }>;
+  resetPassword: (token: string, password: string) => Promise<{ message: string }>;
   isAuthenticated: boolean;
   loading: boolean;
 }
@@ -22,7 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Initialize auth state and verify token on app start
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('authToken');
@@ -30,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (token && savedUser) {
         try {
-          // Verify token is still valid by fetching profile
           const response = await apiClient.get<ApiResponse<User>>(API_ENDPOINTS.AUTH.PROFILE);
           if (response.success && response.data) {
             setUser(response.data);
@@ -38,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } catch (error) {
           console.error('Token validation failed:', error);
-          // Clear invalid token
           apiClient.clearToken();
           localStorage.removeItem('user');
           setUser(null);
@@ -56,17 +55,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, loginData);
       
       if (response.success && response.user && response.token) {
-        // Set token in API client
         apiClient.setToken(response.token);
-        
-        // Update user state
         const userWithLastLogin = {
           ...response.user,
           lastLogin: new Date().toISOString(),
         };
         setUser(userWithLastLogin);
-        
-        // Save to localStorage
         localStorage.setItem('user', JSON.stringify(userWithLastLogin));
         localStorage.setItem('authToken', response.token);
         
@@ -153,20 +147,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<{ message: string }> => {
+    setLoading(true);
+    try {
+      const response = await apiClient.post<ApiResponse<{ message: string }>>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+      if (response.success && response.data) {
+        toast({
+          title: "Password Reset Email Sent",
+          description: response.data.message,
+        });
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to send reset email.');
+    } catch (error: any) {
+      console.error('Forgot password error:', error);
+      toast({
+        title: "Request Failed",
+        description: error.message || "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, password: string): Promise<{ message: string }> => {
+    setLoading(true);
+    try {
+      const response = await apiClient.post<ApiResponse<{ message: string }>>(API_ENDPOINTS.AUTH.RESET_PASSWORD, { token, newPassword: password });
+      
+      if (response.success && response.data) {
+        toast({
+          title: "Password Reset Successful",
+          description: response.data.message,
+        });
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to reset password.');
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      toast({
+        title: "Reset Failed",
+        description: error.message || "Invalid or expired token. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     try {
-      // Clear API client token
       apiClient.clearToken();
-      
-      // Clear user state
       setUser(null);
-
-      // Clear localStorage
       localStorage.removeItem("user");
       localStorage.removeItem("authToken");
       localStorage.removeItem("sessionId");
-
-      // Clear sessionStorage as well
       sessionStorage.clear();
 
       toast({
@@ -177,7 +215,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("User logged out successfully");
     } catch (error) {
       console.error("Error during logout:", error);
-      // Force clear even if there's an error
       setUser(null);
       localStorage.clear();
       apiClient.clearToken();
@@ -190,6 +227,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     updateProfile,
     changePassword,
+    forgotPassword,
+    resetPassword,
     isAuthenticated: !!user,
     loading,
   };

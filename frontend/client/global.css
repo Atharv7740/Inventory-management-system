@@ -218,7 +218,7 @@
     @apply backdrop-blur-md border-r border-sidebar-border/30;
   }
 
-  /* Login Page Theme */
+  Login Page Theme
   .login-background {
     background: linear-gradient(
       135deg,

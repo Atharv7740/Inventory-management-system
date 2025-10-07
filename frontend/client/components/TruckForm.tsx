@@ -430,7 +430,21 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="model">Truck Model *</Label>
-                      <Select
+
+                      <Input
+                      id="TruckModel"
+                      placeholder="e.g., Tata 407"
+                      value={formData.model}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          model: e.target.value,
+                        })
+                      }
+                      required
+                    />
+
+                      {/* <Select
                         value={formData.model}
                         onValueChange={(value) =>
                           setFormData({ ...formData, model: value })
@@ -447,7 +461,7 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
                             </SelectItem>
                           ))}
                         </SelectContent>
-                      </Select>
+                      </Select> */}
                     </div>
 
                     <div className="space-y-2">

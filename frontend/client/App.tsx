@@ -14,6 +14,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Transportation from "./pages/Transportation";
 import Inventory from "./pages/Inventory";
@@ -34,6 +36,8 @@ function AppRoutes() {
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
         }
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/" element={<LandingPage />} />
       <Route
         path="/*"

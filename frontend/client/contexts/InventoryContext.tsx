@@ -39,6 +39,7 @@ interface InventoryContextType {
   updateTruck: (id: string, truck: Partial<Truck>) => Promise<boolean>;
   deleteTruck: (id: string) => Promise<boolean>;
   getTruck: (id: string) => Truck | undefined;
+  addTruckModel: (model: string) => void;
   updateTruckStatus: (id: string, status: TruckStatus) => Promise<boolean>;
   refreshTrucks: () => Promise<void>;
   calculateTruckProfit: (purchasePrice: number, expenses: number, salePrice: number, commission: number) => Promise<number | null>;
@@ -49,7 +50,7 @@ const InventoryContext = createContext<InventoryContextType | undefined>(
 );
 
 // Truck models for form selection
-const truckModels = [
+const initialTruckModels = [
   "Tata 407",
   "Tata LPT 709",
   "Tata LPT 1109",
@@ -65,6 +66,7 @@ const truckModels = [
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [loading, setLoading] = useState(false);
+  const [truckModels, setTruckModels] = useState<string[]>(initialTruckModels);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
@@ -184,6 +186,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addTruckModel = (model: string) => {
+    if (!truckModels.includes(model)) {
+      setTruckModels(prev => [...prev, model]);
+    }
+  };
+
   const updateTruck = async (id: string, updates: Partial<Truck>): Promise<boolean> => {
     setLoading(true);
     try {
@@ -276,6 +284,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     truckModels,
     addTruck,
     updateTruck,
+    addTruckModel,
     deleteTruck,
     getTruck,
     updateTruckStatus,

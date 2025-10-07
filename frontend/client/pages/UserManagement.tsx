@@ -61,6 +61,7 @@ import {
   ChevronRight,
   UserX,
   UserPlus,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -89,6 +90,7 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [resettingPasswordUserId, setResettingPasswordUserId] = useState<string | null>(null);
 
   // Determine view based on URL path or search params
   const isNewRoute = location.pathname === "/users/new";
@@ -195,21 +197,31 @@ export default function UserManagement() {
     }
   };
 
-  const handleResetPassword = async (userId: string) => {
+  const handleResetPassword = async (userId: string, userEmail: string, userName: string) => {
+    setResettingPasswordUserId(userId);
     try {
       const success = await resetUserPassword(userId);
       if (success) {
         toast({
-          title: "Password Reset",
-          description: "Password reset email has been sent to the user.",
+          title: "Password Reset Successful",
+          description: `A password reset link has been sent to ${userEmail}. The user will receive instructions to create a new password.`,
+        });
+      } else {
+        toast({
+          title: "Password Reset Failed",
+          description: "Unable to reset password. Please try again or contact system administrator.",
+          variant: "destructive",
         });
       }
     } catch (error) {
+      console.error("Password reset error:", error);
       toast({
-        title: "Error",
-        description: "Failed to reset password.",
+        title: "Password Reset Error",
+        description: "An unexpected error occurred while resetting the password. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setResettingPasswordUserId(null);
     }
   };
 
@@ -576,12 +588,57 @@ export default function UserManagement() {
                                 </>
                               )}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleResetPassword(user._id)}
-                            >
-                              <RotateCcw className="w-4 h-4 mr-2" />
-                              Reset Password
-                            </DropdownMenuItem>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  disabled={resettingPasswordUserId === user._id}
+                                >
+                                  {resettingPasswordUserId === user._id ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  ) : (
+                                    <RotateCcw className="w-4 h-4 mr-2" />
+                                  )}
+                                  Reset Password
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Reset Password for {user.fullName}
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will send a password reset link to{" "}
+                                    <strong>{user.email}</strong>. The user will receive
+                                    an email with instructions to create a new password.
+                                    <br />
+                                    <br />
+                                    Are you sure you want to proceed?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleResetPassword(user._id, user.email, user.fullName)}
+                                    disabled={resettingPasswordUserId === user._id}
+                                  >
+                                    {resettingPasswordUserId === user._id ? (
+                                      <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Sending Reset Link...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <RotateCcw className="w-4 h-4 mr-2" />
+                                        Send Reset Link
+                                      </>
+                                    )}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                             <DropdownMenuSeparator />
                             {user._id !== currentUser?._id && (
                               <AlertDialog>
@@ -652,6 +709,7 @@ export default function UserManagement() {
                     setCurrentPage((prev) => Math.max(1, prev - 1))
                   }
                   disabled={currentPage === 1}
+                
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Previous

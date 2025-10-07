@@ -1,345 +1,237 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Button } from "../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import {
-  ArrowRight,
-  Truck,
-  BarChart3,
-  Package,
-  Users,
-  Shield,
-  MapPin,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  Star,
-  Zap,
-  Globe,
-  Mail,
-  Phone,
-  MapPin as LocationIcon,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Sparkles,
-} from "lucide-react";
 
+import React, { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import gsap from "gsap";
+import {
+  Truck,
+  Users,
+  DollarSign,
+  LineChart,
+  ArrowRight,
+  Globe,
+  Sparkles,
+  TrendingUp,
+  MapPin,
+  CheckCircle,
+  Twitter,
+  Linkedin,
+  Instagram,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+
+const trips = [
+  { route: "Mumbai → Delhi", status: "completed", profit: "₹15,500" },
+  { route: "Pune → Bangalore", status: "in-transit", profit: "₹18,200" },
+  { route: "Chennai → Hyderabad", status: "planned", profit: "₹12,800" },
+];
 const features = [
   {
     icon: Truck,
-    title: "Transportation Management",
+    title: "Fleet Management",
     description:
-      "Complete trip planning, tracking, and profit calculation with real-time monitoring.",
-    color: "primary",
-    items: [
-      "Trip Planning",
-      "Route Optimization",
-      "Real-time Tracking",
-      "Profit Analytics",
-    ],
-  },
-  {
-    icon: Package,
-    title: "Inventory Management",
-    description:
-      "Full truck lifecycle management from purchase to sale with detailed expense tracking.",
-    color: "accent",
-    items: [
-      "Truck Registration",
-      "Expense Tracking",
-      "NOC Management",
-      "Sale Analytics",
-    ],
-  },
-  {
-    icon: BarChart3,
-    title: "Advanced Reports",
-    description:
-      "Comprehensive analytics and reporting with data visualization and export capabilities.",
-    color: "success",
-    items: [
-      "Performance Metrics",
-      "Financial Reports",
-      "Trend Analysis",
-      "Data Export",
-    ],
+      "Advanced tools to manage and track your fleet in real-time with detailed analytics.",
+    color: "from-blue-500 to-blue-400",
+    items: ["GPS Tracking", "Maintenance Alerts", "Fuel Management"],
   },
   {
     icon: Users,
-    title: "User Management",
+    title: "Client Management",
     description:
-      "Role-based access control with granular permissions and user activity tracking.",
-    color: "warning",
-    items: [
-      "Role Management",
-      "Access Control",
-      "User Permissions",
-      "Activity Logs",
-    ],
+      "Easily manage client relationships and streamline communication channels.",
+    color: "from-purple-500 to-purple-400",
+    items: ["Client Portal", "Contract Management", "Service History"],
   },
   {
-    icon: Shield,
-    title: "Security & Compliance",
+    icon: DollarSign,
+    title: "Profit Optimization",
     description:
-      "Enterprise-grade security with audit trails and compliance management.",
-    color: "primary",
-    items: ["Data Security", "Audit Trails", "Compliance", "Backup Systems"],
+      "Maximize revenue with smart insights and expense tracking features.",
+    color: "from-green-500 to-green-400",
+    items: ["Cost Analysis", "Revenue Forecasting", "Expense Tracking"],
   },
   {
-    icon: Zap,
-    title: "Real-time Updates",
+    icon: LineChart,
+    title: "Advanced Analytics",
     description:
-      "Live notifications and updates for all operations with instant synchronization.",
-    color: "accent",
-    items: [
-      "Live Notifications",
-      "Real-time Sync",
-      "Instant Updates",
-      "Mobile Alerts",
-    ],
+      "Make data-driven decisions with comprehensive reports and visualizations.",
+    color: "from-orange-500 to-orange-400",
+    items: ["Custom Reports", "Trend Analysis", "Performance Metrics"],
   },
-];
-
-const stats = [
-  { number: "10,000+", label: "Trips Managed", icon: Truck },
-  { number: "500+", label: "Fleet Vehicles", icon: Package },
-  { number: "99.9%", label: "Uptime", icon: CheckCircle },
-  { number: "24/7", label: "Support", icon: Clock },
 ];
 
 export default function LandingPage() {
+  const heroRef = useRef(null);
+  const featuresRef = useRef(null);
+  const ctaRef = useRef(null);
+
+  useEffect(() => {
+    gsap.fromTo(
+      heroRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+    );
+    gsap.fromTo(
+      featuresRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "power2.out" }
+    );
+    gsap.fromTo(
+      ctaRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, delay: 0.5, ease: "power2.out" }
+    );
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Truck className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold gradient-text">
-                TransportPro
-              </span>
-            </div>
-            <div className="hidden md:flex items-center gap-6">
-              <a
-                href="#features"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Features
-              </a>
-              <a
-                href="#about"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                About
-              </a>
-              <a
-                href="#contact"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Contact
-              </a>
-              <Button asChild className="admin-action-btn">
-                <Link to="/login">
-                  Get Started
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-950 text-white">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-neutral-900/70 border-b border-neutral-800">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Truck className="w-5 h-5 text-blue-400" />
+            <span className="font-bold text-lg">TransportPro</span>
           </div>
+          <div className="hidden md:flex items-center gap-6 text-sm">
+            {["Features", "Pricing", "About", "Contact"].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="hover:text-blue-400 transition-colors"
+              >
+                {item}
+              </a>
+            ))}
+          </div>
+          <Button asChild className="bg-blue-500 hover:bg-blue-600 rounded-full px-5">
+            <Link to="/login">Sign In</Link>
+          </Button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="login-background min-h-[90vh] flex items-center">
-          {/* Animated Background Elements */}
-          <div className="absolute inset-0 login-backdrop">
-            <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-accent/10 rounded-full blur-3xl animate-pulse delay-1000" />
-            <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-sidebar-primary/10 rounded-full blur-2xl animate-pulse delay-500" />
-            <div className="absolute top-1/3 left-1/2 w-28 h-28 bg-success/10 rounded-full blur-3xl animate-pulse delay-700" />
+    <section
+        ref={heroRef}
+        className="relative flex flex-col lg:flex-row items-center justify-between px-8 lg:px-20 py-20 lg:py-32"
+      >
+        {/* Left Side: Text */}
+        <div className="max-w-2xl space-y-6 text-center lg:text-left">
+          <Badge variant="secondary" className="text-sm bg-blue-500/10 text-blue-400">
+            Professional Transport Management
+          </Badge>
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
+            Revolutionize Your{" "}
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+              Transport Business
+            </span>
+          </h1>
+          <p className="text-lg text-neutral-400 max-w-xl">
+            Complete transport management solution with advanced fleet
+            tracking, profit optimization, and real-time analytics.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <Button asChild className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-6 py-3">
+              <Link to="/login">Get Started Free</Link>
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full px-6 py-3 border-gray-600 text-gray-800 hover:bg-gray-800"
+            >
+              Watch Demo
+            </Button>
           </div>
+        </div>
 
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Hero Content */}
-              <div className="text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
-                  <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    Professional Transport Management
+        {/* Right Side: Dashboard Preview */}
+        <div className="hidden lg:block w-full max-w-lg mt-12 lg:mt-0">
+          <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-8 shadow-2xl">
+            <div className="space-y-6">
+              {/* Browser-like header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <div className="flex-1 bg-gray-900/50 rounded-lg px-3 py-1 text-xs text-white">
+                  transportpro.com/dashboard
+                </div>
+              </div>
+
+              {/* Stats Section */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gradient-to-r from-blue-500/10 to-blue-500/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-blue-400" />
+                    <div className="text-sm font-medium text-white">
+                      Total Profit
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-300">
+                    ₹1,45,250
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-cyan-400/10 to-cyan-400/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Truck className="w-4 h-4 text-cyan-300" />
+                    <div className="text-sm font-medium text-white">
+                      Fleet Size
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold text-cyan-300">24</div>
+                </div>
+              </div>
+
+              {/* Recent Trips */}
+              <div className="bg-gray-900/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm font-medium text-white">
+                    Recent Trips
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-green-500/10 text-green-400"
+                  >
+                    Live
                   </Badge>
                 </div>
-
-                <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                  <span className="block text-white">
-                    Revolutionize Your
-                  </span>
-                  <span className="block bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent">
-                    Transport Business
-                  </span>
-                </h1>
-
-                <p className="text-xl text-muted-foreground mb-8 max-w-2xl">
-                  Complete transport management solution with advanced fleet
-                  tracking, profit optimization, and real-time analytics. Scale
-                  your operations with confidence and efficiency.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="admin-action-btn text-lg px-8 py-6"
-                  >
-                    <Link to="/login">
-                      Get Started Free
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="text-lg px-8 py-6 border-2"
-                  >
-                    Watch Demo
-                    <Globe className="w-5 h-5 ml-2" />
-                  </Button>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-                  {stats.map((stat, index) => (
-                    <div key={index} className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <stat.icon className="w-5 h-5 text-primary mr-2" />
-                        <div className="text-2xl font-bold text-foreground">
-                          {stat.number}
-                        </div>
+                <div className="space-y-2">
+                  {trips.map((trip, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3 h-3 text-white" />
+                        <span className="text-white">{trip.route}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {stat.label}
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            trip.status === "completed"
+                              ? "default"
+                              : trip.status === "in-transit"
+                              ? "secondary"
+                              : "outline"
+                          }
+                          className={`text-xs font-semibold ${
+                            trip.status === "completed"
+                              ? "bg-green-500/10 text-green-300"
+                              : trip.status === "in-transit"
+                              ? "bg-yellow-500/10 text-yellow-300"
+                              : "bg-gray-600/20 text-white"
+                          }`}
+                        >
+                          {trip.status}
+                        </Badge>
+                        <span className="text-green-300 font-medium">
+                          {trip.profit}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Hero Image/Illustration */}
-              <div className="relative">
-                <div className="relative z-10">
-                  <div className="bg-gradient-to-br from-card to-card/95 backdrop-blur-xl border border-border/30 rounded-3xl p-8 shadow-2xl">
-                    <div className="space-y-6">
-                      {/* Dashboard Preview */}
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <div className="flex-1 bg-muted/50 rounded-lg px-3 py-1 text-xs text-muted-foreground">
-                          transportpro.com/dashboard
-                        </div>
-                      </div>
-
-                      {/* Mock Dashboard Content */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="w-4 h-4 text-primary" />
-                            <div className="text-sm font-medium">
-                              Total Profit
-                            </div>
-                          </div>
-                          <div className="text-2xl font-bold text-primary">
-                            ₹1,45,250
-                          </div>
-                        </div>
-                        <div className="bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Truck className="w-4 h-4 text-accent" />
-                            <div className="text-sm font-medium">
-                              Fleet Size
-                            </div>
-                          </div>
-                          <div className="text-2xl font-bold text-accent">
-                            24
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-muted/30 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="text-sm font-medium">
-                            Recent Trips
-                          </div>
-                          <Badge variant="secondary" className="text-xs">
-                            Live
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          {[
-                            {
-                              route: "Mumbai → Delhi",
-                              status: "completed",
-                              profit: "₹15,500",
-                            },
-                            {
-                              route: "Pune → Bangalore",
-                              status: "in-transit",
-                              profit: "₹18,200",
-                            },
-                            {
-                              route: "Chennai → Hyderabad",
-                              status: "planned",
-                              profit: "₹12,800",
-                            },
-                          ].map((trip, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-3 h-3 text-muted-foreground" />
-                                <span>{trip.route}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant={
-                                    trip.status === "completed"
-                                      ? "default"
-                                      : trip.status === "in-transit"
-                                        ? "secondary"
-                                        : "outline"
-                                  }
-                                  className="text-xs"
-                                >
-                                  {trip.status}
-                                </Badge>
-                                <span className="text-success font-medium">
-                                  {trip.profit}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Elements */}
-                <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl"></div>
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-success/20 to-warning/20 rounded-2xl blur-xl"></div>
               </div>
             </div>
           </div>
@@ -347,63 +239,51 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Badge className="bg-primary/10 text-primary border-primary/20">
-                <Star className="w-3 h-3 mr-1" />
-                Features
-              </Badge>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything You Need to
-              <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Manage Your Fleet
+      <section ref={featuresRef} className="py-24 bg-neutral-950" id="features">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              Everything you need to{" "}
+              <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                succeed
               </span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Comprehensive tools and features designed to streamline your
-              transport operations, boost profitability, and provide real-time
-              insights into your business.
+            <p className="text-neutral-400 max-w-2xl mx-auto">
+              Powerful features designed to optimize your transport operations
+              and maximize profitability.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="enhanced-card hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group"
+                className="bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-blue-500/40 hover:shadow-lg transition-all"
               >
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-br from-${feature.color} to-${feature.color}/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <feature.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {feature.title}
-                      </CardTitle>
-                    </div>
+                <CardHeader className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center`}
+                  >
+                    <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <CardTitle className="text-lg font-semibold text-white">
+                    {feature.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    {feature.items.map((item, itemIndex) => (
-                      <div
-                        key={itemIndex}
-                        className="flex items-center gap-2 text-sm"
+                  <p className="text-sm text-neutral-400 mb-4">
+                    {feature.description}
+                  </p>
+                  <ul className="space-y-2">
+                    {feature.items.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-center gap-2 text-sm text-neutral-300"
                       >
-                        <CheckCircle className="w-4 h-4 text-success" />
-                        <span>{item}</span>
-                      </div>
+                        <CheckCircle className="w-4 h-4 text-green-400" />{" "}
+                        {item}
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </CardContent>
               </Card>
             ))}
@@ -411,284 +291,125 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Badge className="bg-accent/10 text-accent border-accent/20">
-                  <Globe className="w-3 h-3 mr-1" />
-                  About TransportPro
-                </Badge>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Built for Modern
-                <span className="block bg-gradient-to-r from-accent to-success bg-clip-text text-transparent">
-                  Transport Companies
-                </span>
-              </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                TransportPro is designed by industry experts who understand the
-                challenges of managing transport operations. Our platform
-                combines cutting-edge technology with practical solutions to
-                help you scale your business efficiently.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="font-medium">
-                    Real-time fleet tracking and monitoring
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-accent" />
-                  </div>
-                  <span className="font-medium">
-                    Automated profit calculation and reporting
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                  </div>
-                  <span className="font-medium">
-                    Enterprise-grade security and compliance
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="bg-gradient-to-br from-card to-card/95 backdrop-blur-xl border border-border/30 rounded-3xl p-8 shadow-2xl">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6">
-                    <TrendingUp className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4">
-                    Trusted by Industry Leaders
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Join thousands of transport companies that have transformed
-                    their operations with TransportPro.
-                  </p>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-primary">
-                        500+
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Companies
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-accent">10K+</div>
-                      <div className="text-sm text-muted-foreground">
-                        Vehicles
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-success">
-                        99.9%
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Uptime
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary via-accent to-primary">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Transform Your Transport Business?
+      <section
+        ref={ctaRef}
+        className="relative bg-gradient-to-r from-blue-600 to-blue-500 py-20"
+      >
+        <div className="max-w-6xl mx-auto px-6 text-center text-white space-y-6">
+          <h2 className="text-3xl md:text-4xl font-bold">
+            Ready to transform your transport business?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
-            Join thousands of companies already using TransportPro to streamline
-            their operations and boost profitability.
+          <p className="text-neutral-200 max-w-2xl mx-auto">
+            Join thousands of businesses already using TransportPro to optimize
+            their operations and boost profits.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               asChild
               size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90"
+              className="px-8 py-6 rounded-full bg-white text-blue-600 hover:bg-neutral-100 shadow-md"
             >
-              <Link to="/login">
-                Start Free Trial
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
+              <Link to="/login">Start Free Trial</Link>
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="text-lg px-8 py-6 border-white text-black hover:bg-white/10"
+              className="px-8 py-6 rounded-full border-white text-blue-700 hover:bg-blue-700"
             >
               Schedule Demo
-              <Clock className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer
-        id="contact"
-        className="bg-sidebar-background text-black"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Company Info */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-black" />
-                </div>
-                <span className="text-xl font-bold">TransportPro</span>
-              </div>
-              <p className="text-black">
-                Professional transport management system designed to help
-                businesses scale efficiently and boost profitability.
-              </p>
-              <div className="flex space-x-4">
-                <div className="w-8 h-8 rounded-lg  flex items-center justify-center hover:bg-primary cursor-pointer transition-colors">
-                  <Facebook className="w-4 h-4" />
-                </div>
-                <div className="w-8 h-8 rounded-lg  flex items-center justify-center hover:bg-primary cursor-pointer transition-colors">
-                  <Twitter className="w-4 h-4 " />
-                </div>
-                <div className="w-8 h-8 rounded-lg  flex items-center justify-center hover:bg-primary cursor-pointer transition-colors">
-                  <Instagram className="w-4 h-4" />
-                </div>
-                <div className="w-8 h-8 rounded-lg  flex items-center justify-center hover:bg-primary cursor-pointer transition-colors">
-                  <Linkedin className="w-4 h-4" />
-                </div>
-              </div>
+      <footer className="bg-neutral-950 border-t border-neutral-800">
+        <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm text-neutral-400">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Truck className="w-5 h-5 text-blue-400" />
+              <span className="text-xl font-bold text-white">TransportPro</span>
             </div>
-
-            {/* Product Links */}
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <div className="space-y-2">
-                <a
-                  href="#features"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
+            <p>
+              Professional transport management system designed to help
+              businesses scale efficiently.
+            </p>
+            <div className="flex gap-3 mt-4">
+              <a href="#" className="hover:text-blue-400">
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a href="#" className="hover:text-blue-400">
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a href="#" className="hover:text-blue-400">
+                <Instagram className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-semibold text-white mb-3">Product</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="#" className="hover:text-blue-400">
                   Features
                 </a>
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
+              </li>
+              <li>
+                <a href="#" className="hover:text-blue-400">
                   Pricing
                 </a>
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  API Documentation
+              </li>
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  Demo
                 </a>
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  Integrations
-                </a>
-              </div>
-            </div>
-
-            {/* Support Links */}
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <div className="space-y-2">
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  Help Center
-                </a>
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  Contact Support
-                </a>
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  System Status
-                </a>
-                <a
-                  href="#"
-                  className="block text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  Bug Reports
-                </a>
-              </div>
-            </div>
-
-            {/* Contact Info */}
-            <div>
-              <h3 className="font-semibold mb-4">Contact</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-primary" />
-                  <span className="text-black">
-                    support@transportpro.com
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-primary" />
-                  <span className="text-black">
-                    +91 98765 43210
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <LocationIcon className="w-4 h-4 text-primary" />
-                  <span className="text-black">
-                    Mumbai, Maharashtra, India
-                  </span>
-                </div>
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
-
-          <div className="border-t border-sidebar-border mt-12 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-black">
-                © 2024 TransportPro. All rights reserved.
-              </div>
-              <div className="flex space-x-6 mt-4 md:mt-0">
-                <a
-                  href="#"
-                  className="text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  Privacy Policy
+          <div>
+            <h4 className="font-semibold text-white mb-3">Company</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  About
                 </a>
-                <a
-                  href="#"
-                  className="text-black  hover:text-sidebar-foreground transition-colors"
-                >
-                  Terms of Service
+              </li>
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  Careers
                 </a>
-                <a
-                  href="#"
-                  className="text-black hover:text-sidebar-foreground transition-colors"
-                >
-                  Cookie Policy
+              </li>
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  Contact
                 </a>
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
+          <div>
+            <h4 className="font-semibold text-white mb-3">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  Privacy
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  Terms
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-blue-400">
+                  Security
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-neutral-800 py-6 text-center text-neutral-500 text-xs">
+          © {new Date().getFullYear()} TransportPro. All rights reserved.
         </div>
       </footer>
     </div>
