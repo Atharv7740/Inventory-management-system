@@ -17,6 +17,8 @@ router.get(
 );
 // Dev helper: fetch latest reset token for an email (only outside production)
 router.get("/dev/reset-token", authController.getResetTokenForEmail);
+// Dev helper: check email transporter (non-production only)
+router.get("/dev/transporter-status", authController.getEmailTransporterStatus);
 router.get("/profile", authMiddleware, authController.getProfile);
 router.put("/profile", authMiddleware, authController.updateProfile);
 router.put("/change-password", authMiddleware, authController.changePassword);

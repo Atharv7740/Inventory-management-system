@@ -12,6 +12,38 @@ const {
 // Load environment variables
 dotenv.config();
 
+// Log basic email configuration presence to help debug production issues
+const emailConfigured = !!(
+  (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) ||
+  (process.env.EMAIL_USER && process.env.EMAIL_PASS)
+);
+console.log("Email configuration present in env:", emailConfigured);
+
+// In production, run a one-time transporter verification so deployment logs show any SMTP/Gmail auth errors.
+try {
+  if (emailConfigured) {
+    // require lazily to avoid loading nodemailer unless needed
+    const { createTransporter } = require("./utils/email");
+    const transporter = createTransporter();
+    if (transporter && typeof transporter.verify === "function") {
+      transporter
+        .verify()
+        .then(() => console.log("Email transporter verified at startup"))
+        .catch((err) =>
+          console.warn(
+            "Email transporter verification at startup failed:",
+            err && err.message ? err.message : err
+          )
+        );
+    }
+  }
+} catch (err) {
+  console.warn(
+    "Email transporter startup check error:",
+    err && err.message ? err.message : err
+  );
+}
+
 // Connect to database
 connectDB();
 
@@ -21,22 +53,25 @@ const PORT = process.env.PORT || 5000;
 // CORS Configuration for production deployment
 // Build explicit allow list and use a dynamic origin callback to be robust
 const allowedLocalOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001',
-  'http://localhost:5000',
-  'http://localhost:5173',
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://localhost:5000",
+  "http://localhost:5173",
 ];
 
 const productionOrigins = [];
 if (process.env.FRONTEND_URL) {
-  productionOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
+  productionOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ""));
 }
 // Ensure the deployed Vercel origin is allowed (no trailing slash)
-productionOrigins.push('https://transportpro.vercel.app');
+productionOrigins.push("https://transportpro.vercel.app");
 
-const allowedOrigins = process.env.NODE_ENV === 'production' ? productionOrigins : allowedLocalOrigins;
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? productionOrigins
+    : allowedLocalOrigins;
 
 // Dynamic origin check for CORS so we can log and control allowed hosts
 const corsOptions = {
@@ -45,31 +80,31 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     // Normalize incoming origin
-    const normalized = origin.replace(/\/$/, '');
+    const normalized = origin.replace(/\/$/, "");
     if (allowedOrigins.includes(normalized)) {
       return callback(null, true);
     }
 
     console.warn(`CORS blocked - origin not allowed: ${origin}`);
-    return callback(new Error('Not allowed by CORS'));
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
-    'Origin',
-    'X-Requested-With',
-    'Content-Type',
-    'Accept',
-    'Authorization',
-    'Cache-Control',
-    'Pragma',
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+    "Cache-Control",
+    "Pragma",
   ],
   optionsSuccessStatus: 200, // For legacy browser support
 };
 
 // Log allowed origins at startup for debugging
-console.log('CORS configuration: NODE_ENV=', process.env.NODE_ENV);
-console.log('Allowed origins:', allowedOrigins);
+console.log("CORS configuration: NODE_ENV=", process.env.NODE_ENV);
+console.log("Allowed origins:", allowedOrigins);
 
 // Middleware
 app.use(cors(corsOptions));

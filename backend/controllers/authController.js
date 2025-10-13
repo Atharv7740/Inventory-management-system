@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { sendPasswordResetEmail } = require("../utils/email");
+const { sendPasswordResetEmail, createTransporter } = require("../utils/email");
 
 // User login
 const login = async (req, res) => {
@@ -124,19 +124,17 @@ const forgotPassword = async (req, res) => {
           console.log(`(async) Password reset email sent for ${email}`);
         }
       })
-      .catch(async (emailError) => {
-        console.error("(async) Email sending failed:", emailError);
-        // Optionally clear the token on failure
-        try {
-          user.passwordResetToken = undefined;
-          user.passwordResetExpires = undefined;
-          await user.save();
-          console.warn(
-            `Cleared password reset token for ${email} due to email failure.`
-          );
-        } catch (err) {
-          console.error("Failed to clear token after email error:", err);
-        }
+      .catch((emailError) => {
+        // Do NOT clear the token on failure — preserve it so admins/devs can debug or resend.
+        // Clearing the token here caused silent failures where the UI showed success but the
+        // email never arrived and the token was lost.
+        console.error(
+          "(async) Email sending failed:",
+          emailError && emailError.message ? emailError.message : emailError
+        );
+        console.warn(
+          `Password reset token preserved for ${email} to allow debugging.`
+        );
       });
 
     // Immediately respond to the client to avoid frontend timeouts
@@ -260,6 +258,49 @@ const validateResetToken = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Server error validating token." });
+  }
+};
+
+// Dev-only helper: verify email transporter configuration (only allowed outside production)
+const getEmailTransporterStatus = async (req, res) => {
+  try {
+    if (process.env.NODE_ENV === "production") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not available in production." });
+    }
+
+    const transporter = createTransporter();
+    if (!transporter) {
+      return res.json({
+        success: false,
+        data: { ok: false, message: "No transporter configured" },
+      });
+    }
+
+    try {
+      await transporter.verify();
+      return res.json({
+        success: true,
+        data: { ok: true, message: "Transporter verified" },
+      });
+    } catch (err) {
+      return res.json({
+        success: false,
+        data: {
+          ok: false,
+          message: err && err.message ? err.message : String(err),
+        },
+      });
+    }
+  } catch (err) {
+    console.error("Dev getEmailTransporterStatus error:", err);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error fetching transporter status.",
+      });
   }
 };
 
