@@ -117,32 +117,39 @@ const forgotPassword = async (req, res) => {
     user.passwordResetExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    // Send reset email
-    try {
-      await sendPasswordResetEmail(email, resetToken, req);
-      // In development, output token to console to ease testing
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`Password reset token for ${email}: ${resetToken}`);
-      }
-
-      res.json({
-        success: true,
-        data: {
-          message: `Password reset link sent to ${email}. Please check your inbox.`,
-        },
+    // Send reset email asynchronously (fire-and-forget) so client isn't blocked by SMTP delays
+    sendPasswordResetEmail(email, resetToken, req)
+      .then(() => {
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`(async) Password reset email sent for ${email}`);
+        }
+      })
+      .catch(async (emailError) => {
+        console.error("(async) Email sending failed:", emailError);
+        // Optionally clear the token on failure
+        try {
+          user.passwordResetToken = undefined;
+          user.passwordResetExpires = undefined;
+          await user.save();
+          console.warn(
+            `Cleared password reset token for ${email} due to email failure.`
+          );
+        } catch (err) {
+          console.error("Failed to clear token after email error:", err);
+        }
       });
-    } catch (emailError) {
-      console.error("Email sending failed:", emailError);
-      // Clear the reset token if email fails
-      user.passwordResetToken = undefined;
-      user.passwordResetExpires = undefined;
-      await user.save();
 
-      res.status(500).json({
-        success: false,
-        message: "Failed to send reset email. Please try again later.",
-      });
+    // Immediately respond to the client to avoid frontend timeouts
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`Password reset token for ${email}: ${resetToken}`);
     }
+
+    return res.json({
+      success: true,
+      data: {
+        message: `Password reset link sent to ${email}. Please check your inbox.`,
+      },
+    });
   } catch (err) {
     console.error("Forgot password error:", err);
     res.status(500).json({
