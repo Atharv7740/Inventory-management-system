@@ -403,8 +403,16 @@ export class ApiClient {
       headers
     };
 
+    // Add a timeout so requests don't hang indefinitely
+    const controller = new AbortController();
+    const timeoutMs = 15000; // 15 seconds
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    // attach signal
+    (config as any).signal = controller.signal;
+
     try {
       const response = await fetch(url, config);
+      clearTimeout(timeout);
 
       let data;
       const contentType = response.headers.get('content-type');
@@ -423,16 +431,19 @@ export class ApiClient {
 
       return data;
     } catch (error: any) {
-      
+      clearTimeout(timeout);
       // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
       if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
         throw new Error('Network error: Unable to connect to the server. Please check if the backend is running and accessible.');
       }
-      
-      if (error.message.includes('CORS')) {
+
+      if (error.message && error.message.includes('CORS')) {
         throw new Error('CORS error: The server is not allowing requests from this origin. Please check the server CORS configuration.');
       }
-      
+
       throw error;
     }
   }
