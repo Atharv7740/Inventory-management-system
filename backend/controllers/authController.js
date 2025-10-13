@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { sendPasswordResetEmail } = require('../utils/email');
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../utils/email");
 
 // User login
 const login = async (req, res) => {
@@ -10,30 +10,31 @@ const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ 
-        error: 'Email and password are required.' 
+      return res.status(400).json({
+        error: "Email and password are required.",
       });
     }
 
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ 
-        error: 'Invalid email or password.' 
+      return res.status(401).json({
+        error: "Invalid email or password.",
       });
     }
 
     // Check if account is locked
     if (user.isLocked) {
-      return res.status(423).json({ 
-        error: 'Account is temporarily locked due to too many failed login attempts. Please try again later.' 
+      return res.status(423).json({
+        error:
+          "Account is temporarily locked due to too many failed login attempts. Please try again later.",
       });
     }
 
     // Check if account is active
-    if (user.status !== 'active') {
-      return res.status(401).json({ 
-        error: 'Account is inactive. Please contact administrator.' 
+    if (user.status !== "active") {
+      return res.status(401).json({
+        error: "Account is inactive. Please contact administrator.",
       });
     }
 
@@ -42,8 +43,8 @@ const login = async (req, res) => {
     if (!isMatch) {
       // Increment login attempts
       await user.incLoginAttempts();
-      return res.status(401).json({ 
-        error: 'Invalid email or password.' 
+      return res.status(401).json({
+        error: "Invalid email or password.",
       });
     }
 
@@ -52,19 +53,19 @@ const login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { 
-        userId: user._id, 
+      {
+        userId: user._id,
         email: user.email,
-        role: user.role 
+        role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: "24h" }
     );
 
     // Return user data (password excluded by toJSON method)
     res.json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       token,
       user: {
         id: user._id,
@@ -75,13 +76,13 @@ const login = async (req, res) => {
         status: user.status,
         department: user.department,
         permissions: user.permissions,
-        lastLogin: user.lastLogin
-      }
+        lastLogin: user.lastLogin,
+      },
     });
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ 
-      error: 'Server error during login.' 
+    console.error("Login error:", err);
+    res.status(500).json({
+      error: "Server error during login.",
     });
   }
 };
@@ -92,21 +93,26 @@ const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ 
-        error: 'Email is required.' 
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required." });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      // Don't reveal if email exists or not for security
-      return res.json({ 
-        message: 'If an account with that email exists, a password reset link has been sent.' 
+      // As requested, reveal that we attempted to send a reset link to the supplied email
+      // NOTE: This leaks information about registered emails; ensure this is desired.
+      console.warn(`Password reset requested for non-existing email: ${email}`);
+      return res.json({
+        success: true,
+        data: {
+          message: `Password reset link sent to ${email}. If this address is registered, you will receive an email shortly.`,
+        },
       });
     }
 
     // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetToken = crypto.randomBytes(32).toString("hex");
     user.passwordResetToken = resetToken;
     user.passwordResetExpires = Date.now() + 3600000; // 1 hour
     await user.save();
@@ -114,48 +120,67 @@ const forgotPassword = async (req, res) => {
     // Send reset email
     try {
       await sendPasswordResetEmail(email, resetToken, req);
-      res.json({ 
-        message: 'If an account with that email exists, a password reset link has been sent.' 
+      // In development, output token to console to ease testing
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`Password reset token for ${email}: ${resetToken}`);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          message: `Password reset link sent to ${email}. Please check your inbox.`,
+        },
       });
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error("Email sending failed:", emailError);
       // Clear the reset token if email fails
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save();
-      
-      res.status(500).json({ 
-        error: 'Failed to send reset email. Please try again later.' 
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to send reset email. Please try again later.",
       });
     }
   } catch (err) {
-    console.error('Forgot password error:', err);
-    res.status(500).json({ 
-      error: 'Server error during password reset request.' 
+    console.error("Forgot password error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error during password reset request.",
     });
   }
 };
 
-// Reset password
+// Reset password (supports token in params or in body)
 const resetPassword = async (req, res) => {
   try {
-    const { token } = req.params;
-    const { password } = req.body;
+    // token may come from params (when user visits link) or from body (frontend posts token)
+    const token = req.params.token || req.body.token;
+    const password = req.body.password || req.body.newPassword;
+
+    if (!token) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Reset token is required." });
+    }
 
     if (!password || password.length < 6) {
-      return res.status(400).json({ 
-        error: 'Password must be at least 6 characters long.' 
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long.",
       });
     }
 
     const user = await User.findOne({
       passwordResetToken: token,
-      passwordResetExpires: { $gt: Date.now() }
+      passwordResetExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        error: 'Invalid or expired password reset token.' 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset token.",
       });
     }
 
@@ -165,14 +190,69 @@ const resetPassword = async (req, res) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    res.json({ 
-      message: 'Password reset successful. You can now login with your new password.' 
+    res.json({
+      success: true,
+      data: {
+        message:
+          "Password reset successful. You can now login with your new password.",
+      },
     });
   } catch (err) {
-    console.error('Reset password error:', err);
-    res.status(500).json({ 
-      error: 'Server error during password reset.' 
+    console.error("Reset password error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during password reset." });
+  }
+};
+
+// Redirect GET token link to frontend reset page (backwards compatibility)
+const redirectResetToFrontend = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const frontendBase = process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.replace(/\/$/, "")
+      : null;
+    const hostBase = `${req.protocol}://${req.get("host")}`;
+    const base = frontendBase || hostBase;
+    const redirectUrl = `${base}/reset-password/${token}`;
+    return res.redirect(302, redirectUrl);
+  } catch (err) {
+    console.error("Redirect error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to redirect to reset page." });
+  }
+};
+
+// Validate reset token (API) - returns JSON whether token is valid
+const validateResetToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token)
+      return res
+        .status(400)
+        .json({ success: false, message: "Token is required." });
+
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: Date.now() },
     });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired token." });
+    }
+
+    return res.json({
+      success: true,
+      data: { valid: true, email: user.email },
+    });
+  } catch (err) {
+    console.error("Validate token error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error validating token." });
   }
 };
 
@@ -181,12 +261,12 @@ const getProfile = async (req, res) => {
   try {
     res.json({
       success: true,
-      user: req.user
+      user: req.user,
     });
   } catch (err) {
-    console.error('Get profile error:', err);
-    res.status(500).json({ 
-      error: 'Server error while fetching profile.' 
+    console.error("Get profile error:", err);
+    res.status(500).json({
+      error: "Server error while fetching profile.",
     });
   }
 };
@@ -199,8 +279,8 @@ const updateProfile = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ 
-        error: 'User not found.' 
+      return res.status(404).json({
+        error: "User not found.",
       });
     }
 
@@ -213,13 +293,13 @@ const updateProfile = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Profile updated successfully',
-      user: user.toJSON()
+      message: "Profile updated successfully",
+      user: user.toJSON(),
     });
   } catch (err) {
-    console.error('Update profile error:', err);
-    res.status(500).json({ 
-      error: 'Server error while updating profile.' 
+    console.error("Update profile error:", err);
+    res.status(500).json({
+      error: "Server error while updating profile.",
     });
   }
 };
@@ -231,29 +311,29 @@ const changePassword = async (req, res) => {
     const userId = req.user._id;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ 
-        error: 'Current password and new password are required.' 
+      return res.status(400).json({
+        error: "Current password and new password are required.",
       });
     }
 
     if (newPassword.length < 6) {
-      return res.status(400).json({ 
-        error: 'New password must be at least 6 characters long.' 
+      return res.status(400).json({
+        error: "New password must be at least 6 characters long.",
       });
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ 
-        error: 'User not found.' 
+      return res.status(404).json({
+        error: "User not found.",
       });
     }
 
     // Verify current password
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
-      return res.status(400).json({ 
-        error: 'Current password is incorrect.' 
+      return res.status(400).json({
+        error: "Current password is incorrect.",
       });
     }
 
@@ -263,12 +343,12 @@ const changePassword = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Password changed successfully'
+      message: "Password changed successfully",
     });
   } catch (err) {
-    console.error('Change password error:', err);
-    res.status(500).json({ 
-      error: 'Server error while changing password.' 
+    console.error("Change password error:", err);
+    res.status(500).json({
+      error: "Server error while changing password.",
     });
   }
 };
@@ -277,7 +357,9 @@ module.exports = {
   login,
   forgotPassword,
   resetPassword,
+  redirectResetToFrontend,
+  validateResetToken,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
 };
