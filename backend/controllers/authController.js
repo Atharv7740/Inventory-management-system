@@ -295,12 +295,10 @@ const getEmailTransporterStatus = async (req, res) => {
     }
   } catch (err) {
     console.error("Dev getEmailTransporterStatus error:", err);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error fetching transporter status.",
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server error fetching transporter status.",
+    });
   }
 };
 
@@ -448,6 +446,7 @@ module.exports = {
   resetPassword,
   redirectResetToFrontend,
   validateResetToken,
+  getEmailTransporterStatus,
   getResetTokenForEmail,
   getProfile,
   updateProfile,
