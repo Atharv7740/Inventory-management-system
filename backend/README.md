@@ -2,8 +2,6 @@
 
 A robust Node.js/Express backend for managing users, authentication, trips, trucks, and analytics for transport and inventory operations. Features secure authentication, role-based access control (RBAC), and comprehensive RESTful APIs.
 
-
-
 ## Features
 
 - **JWT Authentication** with secure password hashing (bcrypt)
@@ -14,8 +12,6 @@ A robust Node.js/Express backend for managing users, authentication, trips, truc
 - **Email Integration**: Password reset via email (nodemailer)
 - **Security**: Rate limiting, account locking, CORS, input validation
 - **Auto-generated API Docs**: Swagger UI at `/api-docs`
-
-
 
 ## 🗂️ Project Structure
 
@@ -31,8 +27,6 @@ IMS_backend/
 ├── swagger-autogen.js # Swagger doc generator
 └── swagger-output.json # Generated Swagger spec
 ```
-
-
 
 ## ⚡ Quick Start
 
@@ -72,8 +66,6 @@ npm start
 Server runs at: [http://localhost:5000](http://localhost:5000)  
 Swagger UI: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 
-
-
 ## 👤 Demo Accounts
 
 - **Admin**:  
@@ -83,8 +75,6 @@ Swagger UI: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 - **Staff**:  
   Email: `staff@transportpro.com`  
   Password: `staff123`
-
-
 
 ## 🔑 Authentication & Authorization
 
@@ -101,6 +91,10 @@ Swagger UI: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 - `POST /login` – User login
 - `POST /forgot-password` – Request password reset
 - `POST /reset-password/:token` – Reset password
+
+Notes:
+
+- The password reset email will send a link to the frontend reset page when the env var `FRONTEND_URL` is set (for example `https://app.example.com`). If `FRONTEND_URL` is not set, the server will default to using its own host (which may cause links to point to the backend). To ensure users receive a link to the frontend, set `FRONTEND_URL` in your environment.
 - `GET /profile` – Get profile (auth)
 - `PUT /profile` – Update profile (auth)
 - `PUT /change-password` – Change password (auth)
@@ -155,8 +149,6 @@ Swagger UI: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 - `GET /transport` – Transport analytics
 - `GET /inventory` – Inventory analytics
 
-
-
 ## 🛡️ Security
 
 - Passwords hashed with bcrypt
@@ -165,7 +157,3 @@ Swagger UI: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 - Account lockout on brute force
 - Input validation & sanitization
 - CORS enabled
-
-
-
-
