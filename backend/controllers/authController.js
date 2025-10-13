@@ -263,6 +263,51 @@ const validateResetToken = async (req, res) => {
   }
 };
 
+// Dev-only helper: return the latest reset token for an email (only allowed outside production)
+const getResetTokenForEmail = async (req, res) => {
+  try {
+    if (process.env.NODE_ENV === "production") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not available in production." });
+    }
+
+    const email = req.query.email;
+    if (!email) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Query parameter `email` is required.",
+        });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user || !user.passwordResetToken) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "No reset token found for that email.",
+        });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        email: user.email,
+        token: user.passwordResetToken,
+        expires: user.passwordResetExpires,
+      },
+    });
+  } catch (err) {
+    console.error("Dev getResetTokenForEmail error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error fetching reset token." });
+  }
+};
+
 // Get current user profile
 const getProfile = async (req, res) => {
   try {

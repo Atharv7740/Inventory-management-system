@@ -1,34 +1,109 @@
 const nodemailer = require("nodemailer");
 
-// Create email transporter
+// Create email transporter using either SMTP_* env vars or Gmail credentials
 function createTransporter() {
-  return nodemailer.createTransport({
-    service: "Gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  // If SMTP_* variables are provided, prefer them (recommended for production)
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const port = process.env.SMTP_PORT
+      ? parseInt(process.env.SMTP_PORT, 10)
+      : 587;
+    const secure = process.env.SMTP_SECURE === "true" || port === 465;
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port,
+      secure,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED !== "false",
+      },
+    });
+
+    // verify transporter in background
+    transporter
+      .verify()
+      .then(() => {
+        console.log("SMTP transporter verified");
+      })
+      .catch((err) => {
+        console.warn(
+          "SMTP transporter verification failed:",
+          err && err.message ? err.message : err
+        );
+      });
+
+    return transporter;
+  }
+
+  // Fallback to Gmail using EMAIL_USER/EMAIL_PASS if explicitly set
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    transporter
+      .verify()
+      .then(() => {
+        console.log("Gmail transporter verified");
+      })
+      .catch((err) => {
+        console.warn(
+          "Gmail transporter verification failed:",
+          err && err.message ? err.message : err
+        );
+      });
+
+    return transporter;
+  }
+
+  // No email configuration
+  console.warn(
+    "No SMTP or EMAIL credentials found in env. Email sending will fail until configured."
+  );
+  return null;
 }
 
-// Send email function
+// Send email function with simple retry
 async function sendEmail(to, subject, text, html = null) {
-  try {
-    const transporter = createTransporter();
+  const transporter = createTransporter();
+  if (!transporter) {
+    const err = new Error("No email transporter configured");
+    console.error("Email sending failed:", err.message);
+    throw err;
+  }
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text,
-      html,
-    };
+  const fromAddress =
+    process.env.FROM_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${to}`);
-  } catch (error) {
-    console.error("Email sending failed:", error);
-    throw error;
+  const mailOptions = {
+    from: fromAddress,
+    to,
+    subject,
+    text,
+    html,
+  };
+
+  const maxAttempts = 2;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent successfully to ${to} (attempt ${attempt})`);
+      return;
+    } catch (error) {
+      console.error(
+        `Email send attempt ${attempt} failed:`,
+        error && error.message ? error.message : error
+      );
+      if (attempt === maxAttempts) throw error;
+      // small delay before retry
+      await new Promise((r) => setTimeout(r, 800));
+    }
   }
 }
 
