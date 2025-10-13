@@ -34,6 +34,20 @@ export default function Login() {
     setMounted(true);
   }, []);
 
+  // If the app is opened with a reset token in query (some email clients/openers may land on login), redirect to reset page
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirectTo');
+      const token = params.get('token');
+      if (redirectTo === 'reset' && token) {
+        navigate(`/reset-password/${token}`);
+      }
+    } catch (err) {
+      // ignore
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

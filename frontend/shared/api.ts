@@ -19,6 +19,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/auth/profile',
     FORGOT_PASSWORD: '/api/auth/forgot-password',
     RESET_PASSWORD: '/api/auth/reset-password',
+    VALIDATE_RESET: (token: string) => `/api/auth/reset-password/${token}/validate`,
     CHANGE_PASSWORD: '/api/auth/change-password'
   },
   // User management endpoints
