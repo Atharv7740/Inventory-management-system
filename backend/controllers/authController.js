@@ -274,22 +274,18 @@ const getResetTokenForEmail = async (req, res) => {
 
     const email = req.query.email;
     if (!email) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Query parameter `email` is required.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Query parameter `email` is required.",
+      });
     }
 
     const user = await User.findOne({ email });
     if (!user || !user.passwordResetToken) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "No reset token found for that email.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "No reset token found for that email.",
+      });
     }
 
     return res.json({
@@ -411,6 +407,7 @@ module.exports = {
   resetPassword,
   redirectResetToFrontend,
   validateResetToken,
+  getResetTokenForEmail,
   getProfile,
   updateProfile,
   changePassword,
