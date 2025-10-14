@@ -142,16 +142,38 @@ const forgotPassword = async (req, res) => {
         "Failed to send password reset email:",
         emailError && emailError.message ? emailError.message : emailError
       );
+
+      // Log additional debug information for production troubleshooting
+      console.error("Email Error Details:", {
+        code: emailError.code,
+        errno: emailError.errno,
+        syscall: emailError.syscall,
+        hostname: emailError.hostname,
+        port: emailError.port,
+        command: emailError.command,
+        stack:
+          process.env.NODE_ENV === "development"
+            ? emailError.stack
+            : "Stack trace hidden in production",
+      });
+
       // Keep the token on the user record to allow admins to inspect/resend. But report failure.
       const publicMsg =
         "Failed to send password reset email. Please contact the administrator or try again later.";
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: publicMsg,
-          error: (emailError && emailError.message) || String(emailError),
-        });
+      return res.status(500).json({
+        success: false,
+        message: publicMsg,
+        error: (emailError && emailError.message) || String(emailError),
+        // Include helpful debugging info for admins
+        debug:
+          process.env.NODE_ENV === "development"
+            ? {
+                code: emailError.code,
+                errno: emailError.errno,
+                hostname: emailError.hostname,
+              }
+            : undefined,
+      });
     }
   } catch (err) {
     console.error("Forgot password error:", err);

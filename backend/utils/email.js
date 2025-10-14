@@ -1,22 +1,82 @@
 const nodemailer = require("nodemailer");
 
-function createTransporter() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    throw new Error(
-      "EMAIL_USER and EMAIL_PASS must be set in .env for email sending to work."
-    );
-  }
-  return nodemailer.createTransport({
+// Email service configurations with fallback support
+const EMAIL_CONFIGS = {
+  gmail: {
     service: "Gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-  });
+    secure: true,
+    port: 465,
+  },
+  // Alternative Gmail configuration with different settings
+  gmail_alt: {
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  },
+  // Outlook/Hotmail configuration (if user wants to switch)
+  outlook: {
+    service: "hotmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  },
+};
+
+function createTransporter() {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error(
+      "EMAIL_USER and EMAIL_PASS must be set in environment variables for email sending to work."
+    );
+    return null;
+  }
+
+  // Try Gmail first with enhanced production settings
+  const transportConfig = {
+    ...EMAIL_CONFIGS.gmail,
+    // Production-specific settings for better reliability
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    rateDelta: 20000,
+    rateLimit: 5,
+    connectionTimeout: 60000, // 60 seconds
+    greetingTimeout: 30000, // 30 seconds
+    socketTimeout: 60000, // 60 seconds
+    // Additional debugging in production
+    debug: process.env.NODE_ENV === "production",
+    logger: process.env.NODE_ENV === "production",
+  };
+
+  try {
+    return nodemailer.createTransporter(transportConfig);
+  } catch (error) {
+    console.error("Failed to create email transporter:", error.message);
+    return null;
+  }
 }
 
 async function sendEmail(to, subject, text, html = null) {
   const transporter = createTransporter();
+
+  if (!transporter) {
+    const errorMsg =
+      "Email transporter not available - check environment variables";
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
   const fromAddress = process.env.EMAIL_USER || "no-reply@example.com";
   const mailOptions = {
     from: fromAddress,
@@ -25,15 +85,31 @@ async function sendEmail(to, subject, text, html = null) {
     text,
     html,
   };
+
   try {
+    // Verify transporter before sending
+    await transporter.verify();
+    console.log("SMTP connection verified successfully");
+
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${to}`);
+    console.log(
+      `Email sent successfully to ${to}, MessageID: ${info.messageId}`
+    );
     return info;
   } catch (error) {
-    console.error(
-      `Email send failed:`,
+    const errorMsg = `Email send failed to ${to}: ${
       error && error.message ? error.message : error
-    );
+    }`;
+    console.error(errorMsg);
+
+    // Log more detailed error information
+    if (error.code) {
+      console.error(`Error code: ${error.code}`);
+    }
+    if (error.errno) {
+      console.error(`Error number: ${error.errno}`);
+    }
+
     throw error;
   }
 }
