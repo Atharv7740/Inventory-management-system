@@ -168,9 +168,8 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
             new Date(trip.startDate) >= new Date(filter.dateFrom)) &&
           (!filter.dateTo ||
             new Date(trip.startDate) <= new Date(filter.dateTo));
-        const matchesTruck =
-          !filter.truckId || trip.truckRegistration === filter.truckId;
-        const matchesStatus = !filter.status || trip.status === filter.status;
+        const matchesTruck = !filter.truckId || trip.vehicleId === filter.truckId;
+        const matchesStatus = !filter.status || (trip.status || '').toString() === filter.status;
         return matchesDate && matchesTruck && matchesStatus;
       });
     }
@@ -301,7 +300,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
 
     const totalTrucks = filteredTrucks.length;
     const soldTrucksList = filteredTrucks.filter(
-      (truck) => truck.status === "sold" || truck.status === "SOLD",
+      (truck) => (truck.status || '').toString().toLowerCase() === 'sold',
     );
     const soldTrucks = soldTrucksList.length;
     const availableTrucks = filteredTrucks.filter(
@@ -476,7 +475,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       transportMetrics: {
         totalTrips: transportReport.totalTrips,
         activeTrips: trips.filter(
-          (trip) => trip.status === "in-transit" || trip.status === "planned",
+          (trip) => (trip.status || '').toString() === "in-transit" || (trip.status || '').toString() === 'pending',
         ).length,
         monthlyProfit: transportReport.monthlyData
           .filter(
@@ -500,11 +499,19 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const exportToPDF = (reportType: "transport" | "inventory", data: any) => {
-    // Mock PDF export - in real implementation, use libraries like jsPDF
-    alert(
-      `PDF export feature will be implemented.`,
-    );
+  const exportToPDF = (reportType: "transport" | "inventory", filter: ReportFilter) => {
+    // Build query string from filter
+    const params = new URLSearchParams();
+    if (filter?.dateFrom) params.append("from", filter.dateFrom);
+    if (filter?.dateTo) params.append("to", filter.dateTo);
+    if (filter?.status) params.append("status", filter.status);
+    // For transport, truckId is not a filter param; for inventory, truckId is not used
+    const endpoint = reportType === "transport"
+      ? `/api/reports/transport/pdf?${params.toString()}`
+      : `/api/reports/inventory/pdf?${params.toString()}`;
+
+    // Use window.open for direct download
+    window.open(endpoint, "_blank");
   };
 
   const exportToCSV = (reportType: "transport" | "inventory", data: any) => {

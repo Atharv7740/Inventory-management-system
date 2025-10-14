@@ -3,13 +3,8 @@
  * Base URL: https://inventory-management-system-mzk7.onrender.com
  */
 
-// Base API URL
-// Priority order:
-// 1. Vite environment variable VITE_API_BASE_URL (set in Vercel or local .env)
-// 2. When building for production, fallback to the deployed backend on Render
-// 3. Otherwise default to localhost for local development
-const DEFAULT_BACKEND = 'https://inventory-management-system-mzk7.onrender.com';
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || (import.meta.env.PROD ? DEFAULT_BACKEND : 'http://localhost:5000');
+// Base API URL: always use localhost for local dev
+export const API_BASE_URL = 'http://localhost:5000';
 
 // API endpoints
 export const API_ENDPOINTS = {

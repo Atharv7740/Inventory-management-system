@@ -101,9 +101,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         console.log('Add user response:', response);
         if (response.success) {
           // Check for user data in different possible locations
-          const userData = response.user || response.data;
-          if (userData) {
-            setUsers(prev => [...prev, userData]);
+          const created = (response as any).data || (response as any).user || (response as any).result;
+          if (created) {
+            setUsers(prev => [...prev, created]);
             toast({
               title: "User Created",
               description: "New user has been successfully created.",
@@ -149,7 +149,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         console.log('Update user response:', response);
         
         if (response.success) {
-          const updatedUser = response.user || response.data;
+          const updatedUser = (response as any).data || (response as any).user || null;
           if (updatedUser) {
             setUsers(prev => prev.map(u => (u._id === id) ? updatedUser : u));
           } else {
@@ -259,7 +259,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         console.log('Toggle status response:', response);
         
         if (response.success) {
-          const updatedUser = response.user || response.data;
+          const updatedUser = (response as any).data || (response as any).user || null;
           if (updatedUser) {
             setUsers(prev => prev.map(u => (u._id === id) ? updatedUser : u));
           } else {

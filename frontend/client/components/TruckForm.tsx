@@ -188,14 +188,17 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
           status: truck.status || 'available',
         });
         
-        // Map purchasePayments to paymentModes if they exist
+        // Map purchasePayments to paymentModes if they exist (use canonical values)
         if (truck.purchasePayments && Array.isArray(truck.purchasePayments)) {
           const mappedPayments = truck.purchasePayments.map((payment, index) => ({
             id: index.toString(),
-            mode: payment.method?.charAt(0).toUpperCase() + payment.method?.slice(1) || 'Cash',
+            mode: (payment.method || 'cash') as PaymentMode,
             amount: payment.amount || 0,
             date: payment.date || '',
             percentage: 0,
+            transactionId: (payment as any).transactionId,
+            chequeNumber: (payment as any).chequeNumber,
+            bankName: (payment as any).bankName,
           }));
           setPaymentModes(mappedPayments);
         } else {
@@ -227,7 +230,7 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
   const addPaymentMode = () => {
     const newPayment: PaymentEntry = {
       id: Date.now().toString(),
-      mode: "Cash",
+      mode: "cash",
       amount: 0,
       date: "",
       percentage: 0,
@@ -277,9 +280,12 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
         purchaseDate: formData.purchaseDate,
         purchasePrice: parseFloat(formData.fullPurchaseAmount) || 0, // API expects purchasePrice
         purchasePayments: paymentModes.map(payment => ({
-          method: payment.mode.toLowerCase() as any, // Convert to lowercase
+          method: payment.mode,
           amount: payment.amount,
           date: payment.date,
+          transactionId: (payment as any).transactionId,
+          chequeNumber: (payment as any).chequeNumber,
+          bankName: (payment as any).bankName,
         })),
         documents: { // API expects documents object
           NOC: formData.nocApplied,
@@ -319,7 +325,7 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
                 commission: parseFloat(formData.saleDetails.commissionAmount) || 0,
                 commissionDealerName: formData.saleDetails.commissionDealerName,
                 payments: [{ // API expects payments array
-                  method: 'cash',
+                  method: (paymentModes[0]?.mode || 'cash') as PaymentMode,
                   amount: parseFloat(formData.saleDetails.saleAmount),
                   date: formData.saleDetails.saleDate,
                 }],
@@ -354,13 +360,13 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
     return years.reverse();
   };
 
+  // Use canonical API payment method values as the option values
   const paymentModeOptions: PaymentMode[] = [
-    "Cash",
+    "cash",
     "RTGS",
-    "GPay",
-    "Paytm",
-    "PhonePe",
-    "Cheque",
+    "UPI",
+    "cheque",
+    "other",
   ];
 
   return (
@@ -727,10 +733,7 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
                       </div>
                     </div>
 
-                    {(payment.mode === "RTGS" ||
-                      payment.mode === "GPay" ||
-                      payment.mode === "Paytm" ||
-                      payment.mode === "PhonePe") && (
+                    {(payment.mode === "RTGS" || payment.mode === "UPI" || payment.mode === "other") && (
                       <div className="space-y-2">
                         <Label>Transaction ID</Label>
                         <Input
@@ -745,7 +748,7 @@ export default function TruckForm({ truckId, mode }: TruckFormProps) {
                       </div>
                     )}
 
-                    {payment.mode === "Cheque" && (
+                    {payment.mode === "cheque" && (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Cheque Number</Label>

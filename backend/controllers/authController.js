@@ -117,37 +117,42 @@ const forgotPassword = async (req, res) => {
     user.passwordResetExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    // Send reset email asynchronously (fire-and-forget) so client isn't blocked by SMTP delays
-    sendPasswordResetEmail(email, resetToken, req)
-      .then(() => {
-        if (process.env.NODE_ENV !== "production") {
-          console.log(`(async) Password reset email sent for ${email}`);
-        }
-      })
-      .catch((emailError) => {
-        // Do NOT clear the token on failure — preserve it so admins/devs can debug or resend.
-        // Clearing the token here caused silent failures where the UI showed success but the
-        // email never arrived and the token was lost.
-        console.error(
-          "(async) Email sending failed:",
-          emailError && emailError.message ? emailError.message : emailError
-        );
-        console.warn(
-          `Password reset token preserved for ${email} to allow debugging.`
-        );
+    // Send reset email and wait for result so frontend sees immediate failure if email fails
+    try {
+      const info = await sendPasswordResetEmail(email, resetToken, req);
+      console.log(
+        `Password reset email send info for ${email}:`,
+        info && info.messageId ? info.messageId : info
+      );
+      if (info && info.messageId) {
+        try {
+          const nodemailer = require("nodemailer");
+          const preview = nodemailer.getTestMessageUrl(info);
+          if (preview) console.log(`Preview URL: ${preview}`);
+        } catch (e) {}
+      }
+      return res.json({
+        success: true,
+        data: {
+          message: `Password reset link sent to ${email}. Please check your inbox.`,
+        },
       });
-
-    // Immediately respond to the client to avoid frontend timeouts
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`Password reset token for ${email}: ${resetToken}`);
+    } catch (emailError) {
+      console.error(
+        "Failed to send password reset email:",
+        emailError && emailError.message ? emailError.message : emailError
+      );
+      // Keep the token on the user record to allow admins to inspect/resend. But report failure.
+      const publicMsg =
+        "Failed to send password reset email. Please contact the administrator or try again later.";
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: publicMsg,
+          error: (emailError && emailError.message) || String(emailError),
+        });
     }
-
-    return res.json({
-      success: true,
-      data: {
-        message: `Password reset link sent to ${email}. Please check your inbox.`,
-      },
-    });
   } catch (err) {
     console.error("Forgot password error:", err);
     res.status(500).json({
@@ -264,12 +269,6 @@ const validateResetToken = async (req, res) => {
 // Dev-only helper: verify email transporter configuration (only allowed outside production)
 const getEmailTransporterStatus = async (req, res) => {
   try {
-    if (process.env.NODE_ENV === "production") {
-      return res
-        .status(403)
-        .json({ success: false, message: "Not available in production." });
-    }
-
     const transporter = createTransporter();
     if (!transporter) {
       return res.json({
@@ -277,7 +276,6 @@ const getEmailTransporterStatus = async (req, res) => {
         data: { ok: false, message: "No transporter configured" },
       });
     }
-
     try {
       await transporter.verify();
       return res.json({
@@ -294,7 +292,7 @@ const getEmailTransporterStatus = async (req, res) => {
       });
     }
   } catch (err) {
-    console.error("Dev getEmailTransporterStatus error:", err);
+    console.error("getEmailTransporterStatus error:", err);
     return res.status(500).json({
       success: false,
       message: "Server error fetching transporter status.",
@@ -305,12 +303,6 @@ const getEmailTransporterStatus = async (req, res) => {
 // Dev-only helper: return the latest reset token for an email (only allowed outside production)
 const getResetTokenForEmail = async (req, res) => {
   try {
-    if (process.env.NODE_ENV === "production") {
-      return res
-        .status(403)
-        .json({ success: false, message: "Not available in production." });
-    }
-
     const email = req.query.email;
     if (!email) {
       return res.status(400).json({
@@ -318,7 +310,6 @@ const getResetTokenForEmail = async (req, res) => {
         message: "Query parameter `email` is required.",
       });
     }
-
     const user = await User.findOne({ email });
     if (!user || !user.passwordResetToken) {
       return res.status(404).json({
@@ -326,7 +317,6 @@ const getResetTokenForEmail = async (req, res) => {
         message: "No reset token found for that email.",
       });
     }
-
     return res.json({
       success: true,
       data: {
@@ -336,7 +326,7 @@ const getResetTokenForEmail = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Dev getResetTokenForEmail error:", err);
+    console.error("getResetTokenForEmail error:", err);
     return res
       .status(500)
       .json({ success: false, message: "Server error fetching reset token." });

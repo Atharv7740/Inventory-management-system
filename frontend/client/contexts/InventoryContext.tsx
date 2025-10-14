@@ -29,6 +29,10 @@ export interface PaymentEntry {
   amount: number;
   date: string;
   percentage: number;
+  // Optional fields for non-cash payments
+  transactionId?: string;
+  chequeNumber?: string;
+  bankName?: string;
 }
 
 interface InventoryContextType {

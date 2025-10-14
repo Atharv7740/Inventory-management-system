@@ -16,9 +16,19 @@ router.get(
   reports.getTransportReport
 );
 router.get(
+  "/transport/pdf",
+  requirePermission("reports", "viewReports"),
+  reports.getTransportReportPDF
+);
+router.get(
   "/inventory",
   requirePermission("reports", "viewReports"),
   reports.getInventoryReport
+);
+router.get(
+  "/inventory/pdf",
+  requirePermission("reports", "viewReports"),
+  reports.getInventoryReportPDF
 );
 
 module.exports = router;

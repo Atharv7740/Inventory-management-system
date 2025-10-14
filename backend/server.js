@@ -12,130 +12,34 @@ const {
 // Load environment variables
 dotenv.config();
 
-// Log basic email configuration presence to help debug production issues
-const emailConfigured = !!(
-  (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) ||
-  (process.env.EMAIL_USER && process.env.EMAIL_PASS)
-);
-console.log("Email configuration present in env:", emailConfigured);
-
-// In production, run a one-time transporter verification so deployment logs show any SMTP/Gmail auth errors.
-try {
-  if (emailConfigured) {
-    // require lazily to avoid loading nodemailer unless needed
-    const { createTransporter } = require("./utils/email");
-    const transporter = createTransporter();
-    if (transporter && typeof transporter.verify === "function") {
-      transporter
-        .verify()
-        .then(() => console.log("Email transporter verified at startup"))
-        .catch((err) =>
-          console.warn(
-            "Email transporter verification at startup failed:",
-            err && err.message ? err.message : err
-          )
-        );
-    }
-  }
-} catch (err) {
-  console.warn(
-    "Email transporter startup check error:",
-    err && err.message ? err.message : err
-  );
-}
-
 // Connect to database
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS Configuration for production deployment
-// Build explicit allow list and use a dynamic origin callback to be robust
-const allowedLocalOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001",
-  "http://localhost:5000",
-  "http://localhost:5173",
-];
-
-const productionOrigins = [];
-if (process.env.FRONTEND_URL) {
-  productionOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ""));
-}
-// Ensure the deployed Vercel origin is allowed (no trailing slash)
-productionOrigins.push("https://transportpro.vercel.app");
-
-const allowedOrigins =
-  process.env.NODE_ENV === "production"
-    ? productionOrigins
-    : allowedLocalOrigins;
-
-// Dynamic origin check for CORS so we can log and control allowed hosts
-const corsOptions = {
-  origin: function (origin, callback) {
-    // If no origin (server-to-server or same-origin), allow it
-    if (!origin) return callback(null, true);
-
-    // Normalize incoming origin
-    const normalized = origin.replace(/\/$/, "");
-    if (allowedOrigins.includes(normalized)) {
-      return callback(null, true);
-    }
-
-    console.warn(`CORS blocked - origin not allowed: ${origin}`);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: [
-    "Origin",
-    "X-Requested-With",
-    "Content-Type",
-    "Accept",
-    "Authorization",
-    "Cache-Control",
-    "Pragma",
-  ],
-  optionsSuccessStatus: 200, // For legacy browser support
-};
-
-// Log allowed origins at startup for debugging
-console.log("CORS configuration: NODE_ENV=", process.env.NODE_ENV);
-console.log("Allowed origins:", allowedOrigins);
+// Simple CORS for local development
+app.use(cors({ origin: true, credentials: true }));
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+
+// Request logging middleware (simple)
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Trust proxy for Render deployment
 app.set("trust proxy", 1);
 
-// Request logging middleware
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  const method = req.method;
-  const path = req.path;
-  const ip = req.ip || req.connection.remoteAddress;
 
-  console.log(`${timestamp} - ${method} ${path} - IP: ${ip}`);
-  next();
-});
 
-// Health check endpoint (should be before other routes for faster response)
-app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "TransportPro Authentication Server is running",
-    timestamp: new Date().toISOString(),
-    version: "1.0.0",
-    environment: process.env.NODE_ENV || "development",
-    port: PORT,
-  });
-});
+
 
 // Swagger Docs
 let swaggerDocument = null;
@@ -191,21 +95,7 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     environment: process.env.NODE_ENV || "development",
     baseUrl: baseUrl,
-    endpoints: {
-      documentation: `${baseUrl}/api-docs`,
-      auth: `${baseUrl}/api/auth`,
-      users: `${baseUrl}/api/users`,
-      dashboard: `${baseUrl}/api/dashboard`,
-      trips: `${baseUrl}/api/trips`,
-      trucks: `${baseUrl}/api/trucks`,
-      health: `${baseUrl}/api/health`,
-    },
-    availableRoutes: {
-      "POST /api/auth/login": "User login",
-      "POST /api/auth/register": "User registration",
-      "GET /api/health": "Health check",
-      "GET /api-docs": "API documentation",
-    },
+  
   });
 });
 
@@ -240,15 +130,6 @@ app.use("*", (req, res) => {
     error: "Route not found",
     message: `Cannot ${req.method} ${req.originalUrl}`,
     timestamp: new Date().toISOString(),
-    availableEndpoints: [
-      "/api/auth",
-      "/api/users",
-      "/api/dashboard",
-      "/api/trips",
-      "/api/trucks",
-      "/api/health",
-      "/api-docs",
-    ],
   });
 });
 
@@ -258,11 +139,10 @@ const startServer = async () => {
     await createAdminIfNotExists();
     await createSampleStaff();
 
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log("\n TransportPro Authentication Server Started!");
-      console.log(` Server running on port ${PORT}`);
-      console.log(`Base URL: http://localhost:${PORT}`);
-      console.log("\nReady to serve requests!\n");
+    app.listen(PORT  ,()=> {
+      
+      console.log(`Server running at http://localhost:${PORT}`);
+
     });
   } catch (error) {
     console.error("Failed to start server:", error);
