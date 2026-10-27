@@ -1,53 +1,70 @@
-# Inventory Management System (IMS)
+# TransportPro
 
-A full-stack web application for managing **transport business operations**, including:
+Operations dashboard for a transport business: trip profitability, and the
+buying and reselling of second-hand trucks.
 
-- ✅ Truck purchase/resale tracking  
-- ✅ Trip profit calculation  
-- ✅ Admin dashboard overview  
-- ✅ Email-based user authentication  
-- ✅ Clean RESTful API with JWT protection
+**Live:** https://transportpro.vercel.app
 
----
+## What it does
 
-## Tech Stack
+**Trips**
+- Record a trip's source, destination and goods.
+- Log every expense line (diesel, tolls, driver and others) and the customer payment.
+- Net profit is calculated per trip.
 
-- **Frontend:** React.js (or Next.js)  
-- **Backend:** Node.js, Express.js  
-- **Database:** MongoDB  
-- **Auth:** JWT, bcrypt, email verification  
-- **Mail Service:** Nodemailer
+**Truck inventory**
+- Record purchases with price, seller and documents.
+- Track refurbishment expenses such as tyres and painting.
+- Record resale with buyer, price and commission; resale profit is calculated.
 
----
+**Dashboard**
+- Totals for trips, trucks, profit, sales and purchases.
 
-## Features
+**Accounts**
+- Sign-up with email verification, JWT sessions, and forgot/reset password.
 
-### User Authentication
+## Stack
 
-- Sign up with email verification  
-- Secure login with JWT  
-- Forgot & reset password
+| Layer    | Technology |
+|----------|------------|
+| Frontend | React 18, TypeScript, Vite, React Router, Tailwind CSS |
+| Backend  | Node.js, Express |
+| Database | MongoDB (Mongoose) |
+| Auth     | JWT, bcrypt, email verification via Nodemailer |
+| API docs | Swagger UI at `/api-docs` |
 
-### Trip Management
+## Repository layout
 
-- Add trip: source, destination, goods  
-- Record all expenses: diesel, tolls, driver, etc.  
-- Add customer payment  
-- Automatic net profit calculation
+```
+backend/    Express API: routes, controllers, models, auth middleware
+frontend/   React + Vite client
+PRD.md      Product requirements
+```
 
-### Truck Inventory
+## Running locally
 
-- Record truck purchase details (price, seller, documents)  
-- Add truck expenses (tyres, painting, etc.)  
-- Record resale details (buyer, price, commission)  
-- Automatic resale profit calculation
+**Backend**
 
-### Admin Dashboard
+```bash
+cd backend
+npm install
+npm run dev        # starts on PORT (default 5000)
+```
 
-- Overview of:
-  - Total trips
-  - Total trucks
-  - Total profit
-  - Total sales & purchases
+Environment variables:
 
----
+| Variable | Purpose |
+|----------|---------|
+| `MONGODB_USERNAME`, `MONGODB_PASSWORD` | MongoDB credentials |
+| `JWT_SECRET` | Signing key for session tokens |
+| `EMAIL_USER`, `EMAIL_PASS` | SMTP account for verification and reset emails |
+| `FRONTEND_URL` | Used in email links and CORS |
+| `PORT` | API port (optional) |
+
+**Frontend**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
