@@ -499,19 +499,69 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const exportToPDF = (reportType: "transport" | "inventory", filter: ReportFilter) => {
-    // Build query string from filter
-    const params = new URLSearchParams();
-    if (filter?.dateFrom) params.append("from", filter.dateFrom);
-    if (filter?.dateTo) params.append("to", filter.dateTo);
-    if (filter?.status) params.append("status", filter.status);
-    // For transport, truckId is not a filter param; for inventory, truckId is not used
-    const endpoint = reportType === "transport"
-      ? `/api/reports/transport/pdf?${params.toString()}`
-      : `/api/reports/inventory/pdf?${params.toString()}`;
+  const exportToPDF = async (reportType: "transport" | "inventory", _data?: any) => {
+    try {
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+      ]);
+      const doc = new jsPDF({ orientation: "landscape" });
+      const money = (n: any) => `Rs ${Number(n || 0).toLocaleString("en-IN")}`;
+      const date = (d: any) => (d ? new Date(d).toLocaleDateString("en-IN") : "-");
+      const title = reportType === "transport" ? "Transport Report" : "Inventory Report";
 
-    // Use window.open for direct download
-    window.open(endpoint, "_blank");
+      doc.setFontSize(16);
+      doc.text(`TransportPro - ${title}`, 14, 16);
+      doc.setFontSize(10);
+      doc.text(`Generated on ${new Date().toLocaleString("en-IN")}`, 14, 23);
+
+      if (reportType === "transport") {
+        const totalProfit = trips.reduce((sum, t: any) => sum + (Number(t.netProfit) || 0), 0);
+        doc.text(`Trips: ${trips.length}    Total net profit: ${money(totalProfit)}`, 14, 30);
+        autoTable(doc, {
+          startY: 36,
+          head: [["Trip ID", "Truck", "Source", "Destination", "Start Date", "Customer Payment", "Net Profit", "Status"]],
+          body: trips.map((t: any) => [
+            t.tripId || t._id || "-",
+            t.vehicleId || "-",
+            t.source || "-",
+            t.destination || "-",
+            date(t.startDate),
+            money(t.customerPayment),
+            money(t.netProfit),
+            t.status || "-",
+          ]),
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+      } else {
+        const totalResale = trucks.reduce((sum, t: any) => sum + (Number(t.resaleProfit) || 0), 0);
+        doc.text(`Trucks: ${trucks.length}    Total resale profit: ${money(totalResale)}`, 14, 30);
+        autoTable(doc, {
+          startY: 36,
+          head: [["Registration", "Model", "Purchase Date", "Purchase Price", "Status", "Resale Profit"]],
+          body: trucks.map((t: any) => [
+            t.registrationNumber || "-",
+            t.model || "-",
+            date(t.purchaseDate),
+            money(t.purchasePrice),
+            t.status || "-",
+            money(t.resaleProfit),
+          ]),
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+      }
+
+      doc.save(`${reportType}_report.pdf`);
+    } catch (error) {
+      console.error("PDF export failed:", error);
+      toast({
+        title: "Export failed",
+        description: "Could not create the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const exportToCSV = (reportType: "transport" | "inventory", data: any) => {

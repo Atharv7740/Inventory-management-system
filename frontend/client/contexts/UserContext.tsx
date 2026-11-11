@@ -31,15 +31,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     console.log('👤 user:', user);
     console.log('👤 user.role:', user?.role);
     
-    // Fetch users if authenticated (temporarily removing admin check for debugging)
-    if (isAuthenticated) {
+    // Only admins can list users (the API route is admin-only)
+    if (isAuthenticated && user?.role === 'admin') {
       console.log('👤 User authenticated, fetching users list...');
       refreshUsers();
     } else {
       console.log('👤 User not authenticated, skipping user fetch');
       console.log('👤 Reason - isAuthenticated:', isAuthenticated);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
   const refreshUsers = async () => {
     setLoading(true);
