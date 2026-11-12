@@ -127,7 +127,7 @@ export default function Layout() {
           className="absolute inset-0 bg-black/50"
           onClick={() => setSidebarOpen(false)}
         />
-        <div className="absolute left-0 top-0 h-full w-72 bg-sidebar-background shadow-2xl transform transition-transform duration-300 ease-out animate-in slide-in-from-left-72">
+        <div className="absolute left-0 top-0 flex h-full w-72 flex-col bg-sidebar shadow-2xl transform transition-transform duration-300 ease-out animate-in slide-in-from-left-72">
           <div className="sidebar-header flex h-16 items-center justify-between px-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
@@ -149,7 +149,7 @@ export default function Layout() {
               <X className="w-5 h-5" />
             </Button>
           </div>
-          <nav className="mt-8 px-4 flex-1">
+          <nav className="mt-8 px-4 flex-1 overflow-y-auto">
             <div className="nav-section mb-4">
               <h3 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider px-3 mb-3">
                 Navigation
@@ -207,7 +207,7 @@ export default function Layout() {
                 variant="outline"
                 size="sm"
                 onClick={handleLogoutClick}
-                className="w-full justify-start text-sidebar-foreground border-sidebar-border/70 hover:bg-sidebar-accent hover:border-sidebar-border font-medium transition-all duration-200 hover:shadow-sm"
+                className="w-full justify-start bg-transparent text-sidebar-foreground border-sidebar-foreground/20 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:border-sidebar-foreground/30 font-medium transition-all duration-200 hover:shadow-sm"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
